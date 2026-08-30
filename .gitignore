@@ -1,0 +1,46 @@
+# Maven build outputs
+target/
+*.class
+*.war
+*.ear
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.settings/
+.classpath
+.project
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# VS Code
+.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs & Temp files
+*.log
+tmp/
+temp/
