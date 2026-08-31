@@ -14,14 +14,16 @@ import java.util.logging.Logger;
 /**
  * Singleton database connection manager for the Sunrise Dental Clinic System (CIS6003).
  * Implements thread-safe lazy initialization using the double-checked locking pattern.
+ * Configured for Cloud TiDB MySQL-compatible database.
  */
 public class DBConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DBConnection.class.getName());
 
-    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/sunrise_dental_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASSWORD = "";
+    private static final String DEFAULT_URL =
+            "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/sunrise_dental_db?sslMode=VERIFY_IDENTITY&useSSL=true&serverTimezone=UTC";
+    private static final String DEFAULT_USER = "42UVtMmfzWtuANk.root";
+    private static final String DEFAULT_PASSWORD = "xn0oZNxqPx9YNeU3";
     private static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
     // volatile keyword ensures atomic read/write visibility across threads
@@ -58,7 +60,7 @@ public class DBConnection {
 
     /**
      * Loads database configuration settings from db.properties on classpath,
-     * environment variables, or system properties, falling back to default MySQL settings.
+     * environment variables, or system properties, falling back to default TiDB settings.
      */
     private void loadConfiguration() {
         Properties properties = new Properties();
