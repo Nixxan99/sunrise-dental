@@ -173,7 +173,7 @@
                     </div>
                     <div class="col-sm-5 text-sm-end mt-3 mt-sm-0">
                         <h4 class="text-uppercase fw-bold text-primary mb-1">
-                            <%= (isDraft != null && isDraft) ? \"Billing Draft\" : \"Tax Invoice\" %>
+                            <%= (isDraft != null && isDraft) ? "Billing Draft" : "Tax Invoice" %>
                         </h4>
                         <div class="fw-semibold text-secondary">Inv #: INV-<%= apptNo %></div>
                         <div class="text-muted small">Date: <%= issuedAt %></div>

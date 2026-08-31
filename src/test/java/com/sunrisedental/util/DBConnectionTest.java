@@ -56,6 +56,12 @@ class DBConnectionTest {
                         + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                         + ")");
 
+                // Ensure performed_by column exists in appointment_audit_log if previously created
+                try {
+                    stmt.executeUpdate("ALTER TABLE appointment_audit_log ADD COLUMN performed_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM'");
+                } catch (SQLException ignored) {
+                }
+
                 // Ensure must_change_password column exists in users table
                 try {
                     stmt.executeUpdate("ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT TRUE");
