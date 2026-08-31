@@ -44,6 +44,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
@@ -195,7 +200,7 @@
                                     <a href="<%= request.getContextPath() %>/admin/treatments?action=edit&id=<%= t.getTreatmentId() %>" class="btn btn-outline-primary btn-sm me-1" title="Edit Treatment">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a href="<%= request.getContextPath() %>/admin/treatments?action=delete&id=<%= t.getTreatmentId() %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove <%= t.getTreatmentName() %>?');\" title="Delete Treatment">
+                                    <a href="<%= request.getContextPath() %>/admin/treatments?action=delete&id=<%= t.getTreatmentId() %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove this treatment?');" title="Delete Treatment">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>

@@ -49,6 +49,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
@@ -86,7 +91,10 @@
                 <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                     <i class="bi bi-moon-stars-fill"></i>
                 </button>
-                <span class="small text-white-50"><i class="bi bi-person-circle me-1"></i><%= staffName %></span>
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-semibold small"><%= staffName %></div>
+                    <small class="badge bg-light text-primary"><%= role %></small>
+                </div>
                 <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">Logout</a>
             </div>
         </div>
@@ -199,7 +207,12 @@
                     </div>
                     <div class="col-sm-6 mb-2">
                         <small class="text-muted d-block">Patient Full Name</small>
-                        <div class="fs-5 fw-bold"><%= appt.getPatientName() != null ? appt.getPatientName() : "Patient #" + appt.getPatientId() %></div>
+                        <div class="fs-5 fw-bold d-flex align-items-center gap-2">
+                            <span><%= appt.getPatientName() != null ? appt.getPatientName() : "Patient #" + appt.getPatientId() %></span>
+                            <a href="<%= request.getContextPath() %>/patients?action=view&id=<%= appt.getPatientId() %>" class="btn btn-outline-primary btn-sm" title="View Patient Profile & Clinical Timeline">
+                                <i class="bi bi-clock-history me-1"></i>History
+                            </a>
+                        </div>
                     </div>
                     <div class="col-sm-6 mb-2">
                         <small class="text-muted d-block">System Patient ID</small>

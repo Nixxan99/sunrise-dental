@@ -83,6 +83,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>

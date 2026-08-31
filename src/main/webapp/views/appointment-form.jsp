@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.sunrisedental.model.Dentist" %>
+<%@ page import="com.sunrisedental.model.Patient" %>
 <%@ page import="com.sunrisedental.model.Treatment" %>
 <%@ page import="com.sunrisedental.model.User" %>
 <%@ page import="java.time.LocalDate" %>
@@ -12,6 +13,10 @@
 
     List<Dentist> dentists = (List<Dentist>) request.getAttribute("dentists");
     List<Treatment> treatments = (List<Treatment>) request.getAttribute("treatments");
+    List<Patient> allPatients = (List<Patient>) request.getAttribute("allPatients");
+
+    Object selectedPatientIdObj = request.getAttribute("selectedPatientId");
+    String selectedPatientId = selectedPatientIdObj != null ? String.valueOf(selectedPatientIdObj) : "";
 
     String patientName = (String) request.getAttribute("enteredPatientName");
     String address = (String) request.getAttribute("enteredAddress");
@@ -58,6 +63,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link active fw-semibold" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
@@ -95,7 +105,10 @@
                 <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                     <i class="bi bi-moon-stars-fill"></i>
                 </button>
-                <span class="small text-white-50"><i class="bi bi-person-circle me-1"></i><%= staffName %></span>
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-semibold small"><%= staffName %></div>
+                    <small class="badge bg-light text-primary"><%= role %></small>
+                </div>
                 <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">Logout</a>
             </div>
         </div>
@@ -134,6 +147,30 @@
                 <% } %>
 
                 <form action="<%= request.getContextPath() %>/appointments" method="post" id="appointmentForm">
+                    <input type="hidden" name="patientId" id="patientId" value="<%= selectedPatientId %>">
+
+                    <!-- Section: Existing Patient Quick Picker (Optional) -->
+                    <% if (allPatients != null && !allPatients.isEmpty()) { %>
+                    <div class="card bg-body-tertiary p-3 mb-4 border-0">
+                        <label for="existingPatientPicker" class="form-label fw-bold text-primary small mb-1">
+                            <i class="bi bi-person-check-fill me-1"></i>Quick Lookup Existing Registered Patient (Optional)
+                        </label>
+                        <select class="form-select form-select-sm" id="existingPatientPicker" onchange="populatePatientData(this)">
+                            <option value="">-- Select Existing Patient to Auto-fill --</option>
+                            <% for (Patient p : allPatients) {
+                                boolean isSel = selectedPatientId.equals(String.valueOf(p.getPatientId()));
+                            %>
+                                <option value="<%= p.getPatientId() %>"
+                                        data-name="<%= p.getFullName() %>"
+                                        data-contact="<%= p.getContactNumber() %>"
+                                        data-address="<%= p.getAddress() != null ? p.getAddress() : "" %>"
+                                        <%= isSel ? "selected" : "" %>>
+                                    <%= p.getFullName() %> (<%= p.getContactNumber() %>) - ID #<%= p.getPatientId() %>
+                                </option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <% } %>
 
                     <!-- Section: Patient Demographics -->
                     <h6 class="text-primary text-uppercase fw-bold mb-3">
@@ -194,7 +231,7 @@
                                         for (Dentist d : dentists) {
                                             boolean selected = enteredDentistId != null && enteredDentistId.equals(String.valueOf(d.getDentistId()));
                                     %>
-                                        <option value="<%= d.getDentistId() %>" <%= selected ? "selected" : "" %>>
+                                        <option value="<%= d.getDentistId() %>" <%= selected ? "selected" : " " %>>
                                             <%= d.getName() %> (<%= d.getSpecialization() %>)
                                         </option>
                                     <%  }
@@ -260,6 +297,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function populatePatientData(selectElem) {
+        const option = selectElem.options[selectElem.selectedIndex];
+        if (option && option.value) {
+            document.getElementById('patientId').value = option.value;
+            document.getElementById('patientName').value = option.getAttribute('data-name') || '';
+            document.getElementById('contactNumber').value = option.getAttribute('data-contact') || '';
+            document.getElementById('address').value = option.getAttribute('data-address') || '';
+        } else {
+            document.getElementById('patientId').value = '';
+        }
+    }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>

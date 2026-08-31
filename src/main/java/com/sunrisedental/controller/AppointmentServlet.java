@@ -109,6 +109,7 @@ public class AppointmentServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String patientIdStr = request.getParameter("patientId");
         String patientName = request.getParameter("patientName");
         String address = request.getParameter("address");
         String contactNumber = request.getParameter("contactNumber");
@@ -161,19 +162,38 @@ public class AppointmentServlet extends HttpServlet {
         }
 
         try {
-            // Find or create patient
-            Patient patient = patientDAO.getPatientByContactNumber(contactNumber.trim());
-            if (patient == null) {
-                patient = new Patient();
-                patient.setFullName(patientName.trim());
-                patient.setAddress(address != null ? address.trim() : "");
-                patient.setContactNumber(contactNumber.trim());
-                patientDAO.createPatient(patient);
+            int targetPatientId = -1;
+            if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
+                try {
+                    targetPatientId = Integer.parseInt(patientIdStr.trim());
+                } catch (NumberFormatException ignored) {}
+            }
+
+            Patient patient;
+            if (targetPatientId > 0) {
+                patient = patientDAO.getPatientById(targetPatientId);
+                if (patient != null) {
+                    patient.setFullName(patientName.trim());
+                    patient.setAddress(address != null ? address.trim() : "");
+                    patient.setContactNumber(contactNumber.trim());
+                    patientDAO.updatePatient(patient);
+                } else {
+                    patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim());
+                    targetPatientId = patientDAO.registerPatient(patient);
+                }
+            } else {
+                patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim());
+                targetPatientId = patientDAO.registerPatient(patient);
+            }
+
+            if (targetPatientId <= 0) {
+                forwardWithValidationError(request, response, "Failed to register or update patient profile.");
+                return;
             }
 
             // Construct and persist appointment
             Appointment appt = new Appointment();
-            appt.setPatientId(patient.getPatientId());
+            appt.setPatientId(targetPatientId);
             appt.setDentistId(dentistId);
             appt.setTreatmentId(treatmentId);
             appt.setAppointmentDate(appointmentDate);
@@ -215,11 +235,27 @@ public class AppointmentServlet extends HttpServlet {
 
     private void showNewAppointmentForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String patientIdParam = request.getParameter("patientId");
+        if (patientIdParam != null && !patientIdParam.trim().isEmpty()) {
+            try {
+                int pid = Integer.parseInt(patientIdParam.trim());
+                Patient p = patientDAO.getPatientById(pid);
+                if (p != null) {
+                    request.setAttribute("selectedPatientId", p.getPatientId());
+                    request.setAttribute("enteredPatientName", p.getFullName());
+                    request.setAttribute("enteredAddress", p.getAddress());
+                    request.setAttribute("enteredContactNumber", p.getContactNumber());
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
         List<Dentist> dentists = dentistDAO.getAllDentists();
         List<Treatment> treatments = treatmentDAO.getAllTreatments();
+        List<Patient> patients = patientDAO.getAllPatients();
 
         request.setAttribute("dentists", dentists);
         request.setAttribute("treatments", treatments);
+        request.setAttribute("allPatients", patients);
         request.getRequestDispatcher("/views/appointment-form.jsp").forward(request, response);
     }
 
@@ -257,6 +293,7 @@ public class AppointmentServlet extends HttpServlet {
     private void forwardWithValidationError(HttpServletRequest request, HttpServletResponse response, String errorMsg)
             throws ServletException, IOException {
         request.setAttribute("errorMessage", errorMsg);
+        request.setAttribute("selectedPatientId", request.getParameter("patientId"));
         request.setAttribute("enteredPatientName", request.getParameter("patientName"));
         request.setAttribute("enteredAddress", request.getParameter("address"));
         request.setAttribute("enteredContactNumber", request.getParameter("contactNumber"));
@@ -268,8 +305,11 @@ public class AppointmentServlet extends HttpServlet {
 
         List<Dentist> dentists = dentistDAO.getAllDentists();
         List<Treatment> treatments = treatmentDAO.getAllTreatments();
+        List<Patient> patients = patientDAO.getAllPatients();
+
         request.setAttribute("dentists", dentists);
         request.setAttribute("treatments", treatments);
+        request.setAttribute("allPatients", patients);
 
         request.getRequestDispatcher("/views/appointment-form.jsp").forward(request, response);
     }

@@ -51,6 +51,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
@@ -128,10 +133,26 @@
                 </ul>
             </div>
 
-            <!-- Guide Section 2: Booking an Appointment & Notification -->
+            <!-- Guide Section 2: Patient Management & Clinical History -->
             <div class="card clinic-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-3">
                     <span class="step-badge bg-primary text-white me-3">2</span>
+                    <h4 class="fw-bold mb-0">Patient Directory & Clinical History Tracking</h4>
+                </div>
+                <p class="text-secondary">
+                    Clinic staff can maintain central patient records and inspect complete appointment histories:
+                </p>
+                <ul>
+                    <li>Click <strong>Patients</strong> in the navigation header to view all registered patients or search by name/phone.</li>
+                    <li>Click <strong>History</strong> to view a patient's complete timeline of past appointments, assigned dentists, procedures received, and billing statuses.</li>
+                    <li>Click <strong>Book Visit</strong> on a patient profile to immediately auto-fill their demographics on the booking form.</li>
+                </ul>
+            </div>
+
+            <!-- Guide Section 3: Booking an Appointment & Notification -->
+            <div class="card clinic-card p-4 mb-4">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="step-badge bg-primary text-white me-3">3</span>
                     <h4 class="fw-bold mb-0">Booking a Patient Appointment & Automated Notifications</h4>
                 </div>
                 <p class="text-secondary">
@@ -139,7 +160,7 @@
                 </p>
                 <ul>
                     <li>Click <strong>New Appointment</strong> from the navigation bar or dashboard.</li>
-                    <li>Enter the patient's full name, address, and Sri Lankan contact number (e.g. <code>0712345678</code> or <code>+94771234567</code>).</li>
+                    <li>Select an existing patient from the dropdown to auto-fill details, or enter new patient details directly.</li>
                     <li>Optionally provide an email address to receive asynchronous Gmail SMTP notifications.</li>
                     <li>Select the assigned <strong>Dentist</strong> and the desired <strong>Treatment Procedure</strong>. Standard procedure fees are populated automatically.</li>
                     <li>Select the <strong>Date</strong> (must be today or a future date) and <strong>Time</strong>.</li>
@@ -147,10 +168,10 @@
                 </ul>
             </div>
 
-            <!-- Guide Section 3: Searching & Viewing Records -->
+            <!-- Guide Section 4: Searching & Viewing Records -->
             <div class="card clinic-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge bg-primary text-white me-3">3</span>
+                    <span class="step-badge bg-primary text-white me-3">4</span>
                     <h4 class="fw-bold mb-0">Searching & Looking Up Appointments</h4>
                 </div>
                 <p class="text-secondary">
@@ -163,10 +184,10 @@
                 </ul>
             </div>
 
-            <!-- Guide Section 4: Billing & Invoice Generation -->
+            <!-- Guide Section 5: Billing & Invoice Generation -->
             <div class="card clinic-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge bg-primary text-white me-3">4</span>
+                    <span class="step-badge bg-primary text-white me-3">5</span>
                     <h4 class="fw-bold mb-0">Billing & AI-Assisted Care Plans</h4>
                 </div>
                 <p class="text-secondary">
@@ -181,10 +202,10 @@
                 </ul>
             </div>
 
-            <!-- Guide Section 5: Clinic Analytics & Decision-Making Reports -->
+            <!-- Guide Section 6: Clinic Analytics & Decision-Making Reports -->
             <div class="card clinic-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge bg-success text-white me-3">5</span>
+                    <span class="step-badge bg-success text-white me-3">6</span>
                     <h4 class="fw-bold mb-0">Clinic Management Analytics & Reports (Task B)</h4>
                 </div>
                 <p class="text-secondary">
@@ -192,16 +213,16 @@
                 </p>
                 <ul>
                     <li>Click <strong>Reports & Analytics</strong> in the navigation bar or visit <code>/reports</code>.</li>
-                    <li>Interactive <strong>Chart.js</strong> visualizations display revenue generated by dental procedure and doctor workload distribution.</li>
+                    <li>Interactive <strong>Chart.js</strong> visualizations display revenue generated by dental procedure, doctor workload distribution, and patient retention rates.</li>
                     <li>Tabular breakdowns show booking counts, average fees, and doctor revenue contributions.</li>
                     <li>Click <strong>Print Management Report</strong> to generate formatted paper/PDF reports for clinic management.</li>
                 </ul>
             </div>
 
-            <!-- Guide Section 6: Distributed RESTful Web Service -->
+            <!-- Guide Section 7: Distributed RESTful Web Service -->
             <div class="card clinic-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge bg-info text-white me-3">6</span>
+                    <span class="step-badge bg-info text-white me-3">7</span>
                     <h4 class="fw-bold mb-0">Distributed Web Service Integration (Task B)</h4>
                 </div>
                 <p class="text-secondary">
@@ -218,9 +239,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="badge bg-success">GET</span></td>
-                                <td><code>/api/appointments</code></td>
-                                <td>Retrieves all scheduled appointments in JSON format.</td>
+                                <td><span class="badge bg-success">GET</span></td>\n                                <td><code>/api/appointments</code></td>\n                                <td>Retrieves all scheduled appointments in JSON format.</td>
                             </tr>
                             <tr>
                                 <td><span class="badge bg-success">GET</span></td>

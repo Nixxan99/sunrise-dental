@@ -52,6 +52,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
@@ -125,6 +130,9 @@
             </a>
             <a href="<%= request.getContextPath() %>/reports" class="btn btn-outline-primary shadow-sm">
                 <i class="bi bi-graph-up me-1"></i>View Reports
+            </a>
+            <a href="<%= request.getContextPath() %>/patients" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-people me-1"></i>Patients
             </a>
             <a href="<%= request.getContextPath() %>/appointments?action=search" class="btn btn-outline-secondary shadow-sm">
                 <i class="bi bi-search me-1"></i>Find Appointment
@@ -221,7 +229,12 @@
                     %>
                         <tr>
                             <td class="ps-4 fw-bold text-primary">#<%= a.getAppointmentNumber() %></td>
-                            <td class="fw-semibold"><%= a.getPatientName() != null ? a.getPatientName() : "Patient #" + a.getPatientId() %></td>
+                            <td class="fw-semibold">
+                                <a href="<%= request.getContextPath() %>/patients?action=view&id=<%= a.getPatientId() %>" class="text-decoration-none text-body fw-bold" title="View Patient Profile & History">
+                                    <%= a.getPatientName() != null ? a.getPatientName() : "Patient #" + a.getPatientId() %>
+                                    <i class="bi bi-box-arrow-up-right small text-muted ms-1"></i>
+                                </a>
+                            </td>
                             <td><i class="bi bi-person-badge text-muted me-1"></i><%= a.getDentistName() != null ? a.getDentistName() : "Doctor #" + a.getDentistId() %></td>
                             <td><span class="badge bg-body-secondary text-body border"><%= a.getTreatmentName() != null ? a.getTreatmentName() : "Treatment #" + a.getTreatmentId() %></span></td>
                             <td><%= a.getAppointmentDate() %></td>

@@ -1,7 +1,9 @@
 package com.sunrisedental.controller;
 
 import com.google.gson.Gson;
+import com.sunrisedental.dao.PatientDAO;
 import com.sunrisedental.dao.ReportDAO;
+import com.sunrisedental.dao.impl.PatientDAOImpl;
 import com.sunrisedental.dao.impl.ReportDAOImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,27 +13,34 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Controller providing Clinic Analytics, Decision-Making Reports, and Chart Visualizations.
+ * Controller providing Clinic Analytics, Decision-Making Reports, Patient Retention, and Chart Visualizations.
  */
 @WebServlet(name = "ReportServlet", urlPatterns = {"/reports"})
 public class ReportServlet extends HttpServlet {
 
     private ReportDAO reportDAO;
+    private PatientDAO patientDAO;
     private Gson gson;
 
     @Override
     public void init() {
         this.reportDAO = new ReportDAOImpl();
+        this.patientDAO = new PatientDAOImpl();
         this.gson = new Gson();
     }
 
-    // Setter for testing / DI
+    // Setters for testing / DI
     public void setReportDAO(ReportDAO reportDAO) {
         this.reportDAO = reportDAO;
+    }
+
+    public void setPatientDAO(PatientDAO patientDAO) {
+        this.patientDAO = patientDAO;
     }
 
     @Override
@@ -41,6 +50,7 @@ public class ReportServlet extends HttpServlet {
         List<ReportDAO.TreatmentReportItem> treatmentReports = reportDAO.getTreatmentBreakdown();
         List<ReportDAO.DoctorReportItem> doctorReports = reportDAO.getDoctorBreakdown();
         Map<String, Object> summary = reportDAO.getOverallSummary();
+        Map<String, Object> patientAnalytics = patientDAO.getPatientAnalytics();
 
         // Chart 1: Treatment Revenue Breakdown
         List<String> treatmentLabels = new ArrayList<>();
@@ -64,9 +74,16 @@ public class ReportServlet extends HttpServlet {
             doctorRevenues.add(item.getTotalRevenue());
         }
 
+        // Chart 3: Patient Retention Breakdown (Single Visit vs Repeat Patients)
+        int repeatPatients = (Integer) patientAnalytics.getOrDefault("repeatPatients", 0);
+        int singleVisitPatients = (Integer) patientAnalytics.getOrDefault("singleVisitPatients", 0);
+        List<String> retentionLabels = Arrays.asList("First-Time Patients", "Returning / Repeat Patients");
+        List<Integer> retentionCounts = Arrays.asList(singleVisitPatients, repeatPatients);
+
         request.setAttribute("treatmentReports", treatmentReports);
         request.setAttribute("doctorReports", doctorReports);
         request.setAttribute("summary", summary);
+        request.setAttribute("patientAnalytics", patientAnalytics);
 
         // Pass JSON strings for Chart.js
         request.setAttribute("treatmentLabelsJson", gson.toJson(treatmentLabels));
@@ -75,6 +92,8 @@ public class ReportServlet extends HttpServlet {
         request.setAttribute("doctorLabelsJson", gson.toJson(doctorLabels));
         request.setAttribute("doctorCountsJson", gson.toJson(doctorCounts));
         request.setAttribute("doctorRevenuesJson", gson.toJson(doctorRevenues));
+        request.setAttribute("retentionLabelsJson", gson.toJson(retentionLabels));
+        request.setAttribute("retentionCountsJson", gson.toJson(retentionCounts));
 
         request.getRequestDispatcher("/views/reports.jsp").forward(request, response);
     }

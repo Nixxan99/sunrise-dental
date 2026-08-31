@@ -4,6 +4,7 @@ import com.sunrisedental.dao.NotificationLogDAO;
 import com.sunrisedental.dao.PatientDAO;
 import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Patient;
+import com.sunrisedental.model.PatientAppointmentHistoryItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +49,10 @@ class NotificationServiceTest {
             @Override
             public boolean createPatient(Patient patient) { return true; }
             @Override
+            public int registerPatient(Patient patient) { return 1; }
+            @Override
+            public boolean updatePatient(Patient patient) { return true; }
+            @Override
             public Patient getPatientById(int patientId) {
                 Patient p = new Patient();
                 p.setPatientId(patientId);
@@ -55,7 +63,13 @@ class NotificationServiceTest {
             @Override
             public Patient getPatientByContactNumber(String contactNumber) { return null; }
             @Override
-            public java.util.List<Patient> getAllPatients() { return java.util.Collections.emptyList(); }
+            public List<Patient> getAllPatients() { return Collections.emptyList(); }
+            @Override
+            public List<Patient> searchPatients(String query) { return Collections.emptyList(); }
+            @Override
+            public List<PatientAppointmentHistoryItem> getPatientAppointmentHistory(int patientId) { return Collections.emptyList(); }
+            @Override
+            public Map<String, Object> getPatientAnalytics() { return Collections.emptyMap(); }
         };
     }
 

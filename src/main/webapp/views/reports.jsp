@@ -12,6 +12,7 @@
     List<ReportDAO.TreatmentReportItem> treatmentReports = (List<ReportDAO.TreatmentReportItem>) request.getAttribute("treatmentReports");
     List<ReportDAO.DoctorReportItem> doctorReports = (List<ReportDAO.DoctorReportItem>) request.getAttribute("doctorReports");
     Map<String, Object> summary = (Map<String, Object>) request.getAttribute("summary");
+    Map<String, Object> patientAnalytics = (Map<String, Object>) request.getAttribute("patientAnalytics");
 
     int totalAppointments = summary != null && summary.get("totalAppointments") != null ? (Integer) summary.get("totalAppointments") : 0;
     int scheduledAppointments = summary != null && summary.get("scheduledAppointments") != null ? (Integer) summary.get("scheduledAppointments") : 0;
@@ -21,12 +22,19 @@
     double totalRevenue = summary != null && summary.get("totalRevenue") != null ? (Double) summary.get("totalRevenue") : 0.0;
     double avgInvoice = summary != null && summary.get("avgInvoiceValue") != null ? (Double) summary.get("avgInvoiceValue") : 0.0;
 
+    int totalUniquePatients = patientAnalytics != null && patientAnalytics.get("totalUniquePatients") != null ? (Integer) patientAnalytics.get("totalUniquePatients") : 0;
+    int repeatPatients = patientAnalytics != null && patientAnalytics.get("repeatPatients") != null ? (Integer) patientAnalytics.get("repeatPatients") : 0;
+    int newPatientsThisMonth = patientAnalytics != null && patientAnalytics.get("newPatientsThisMonth") != null ? (Integer) patientAnalytics.get("newPatientsThisMonth") : 0;
+    double repeatRate = patientAnalytics != null && patientAnalytics.get("repeatRate") != null ? (Double) patientAnalytics.get("repeatRate") : 0.0;
+
     String treatmentLabelsJson = (String) request.getAttribute("treatmentLabelsJson");
     String treatmentRevenuesJson = (String) request.getAttribute("treatmentRevenuesJson");
     String treatmentCountsJson = (String) request.getAttribute("treatmentCountsJson");
     String doctorLabelsJson = (String) request.getAttribute("doctorLabelsJson");
     String doctorCountsJson = (String) request.getAttribute("doctorCountsJson");
     String doctorRevenuesJson = (String) request.getAttribute("doctorRevenuesJson");
+    String retentionLabelsJson = (String) request.getAttribute("retentionLabelsJson");
+    String retentionCountsJson = (String) request.getAttribute("retentionCountsJson");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,6 +80,11 @@
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/dashboard">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/patients">
+                        <i class="bi bi-people-fill me-1"></i>Patients
                     </a>
                 </li>
                 <li class="nav-item">
@@ -129,7 +142,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
             <h2 class="fw-bold mb-1">Clinic Management Analytics & Reports</h2>
-            <p class="text-muted mb-0">Strategic decision-making reports, treatment revenue breakdown, and doctor workloads (CIS6003 Task B)</p>
+            <p class="text-muted mb-0">Strategic decision-making reports, patient retention analytics, and doctor workloads (CIS6003 Task B)</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2 no-print">
             <button onclick="window.print()" class="btn btn-primary-gradient shadow-sm fw-semibold">
@@ -177,12 +190,12 @@
             <div class="card clinic-card p-4 border-start border-info border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-muted small text-uppercase fw-bold">Active Dentists</div>
-                        <div class="fs-2 fw-bold text-info"><%= totalDentists %></div>
-                        <small class="text-muted">Specialists on roster</small>
+                        <div class="text-muted small text-uppercase fw-bold">Repeat Patient Rate</div>
+                        <div class="fs-2 fw-bold text-info"><%= String.format("%.1f", repeatRate) %>%</div>
+                        <small class="text-muted"><%= repeatPatients %> repeat of <%= totalUniquePatients %> patients</small>
                     </div>
                     <div class="badge-subtle-primary p-3 rounded-circle">
-                        <i class="bi bi-person-badge fs-3 text-info"></i>
+                        <i class="bi bi-arrow-repeat fs-3 text-info"></i>
                     </div>
                 </div>
             </div>
@@ -192,12 +205,12 @@
             <div class="card clinic-card p-4 border-start border-warning border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-muted small text-uppercase fw-bold">Registered Patients</div>
-                        <div class="fs-2 fw-bold text-warning"><%= totalPatients %></div>
-                        <small class="text-muted">In clinic registry</small>
+                        <div class="text-muted small text-uppercase fw-bold">New Patients (This Month)</div>
+                        <div class="fs-2 fw-bold text-warning"><%= newPatientsThisMonth %></div>
+                        <small class="text-muted">Registered in current month</small>
                     </div>
                     <div class="badge-subtle-warning p-3 rounded-circle">
-                        <i class="bi bi-people fs-3"></i>
+                        <i class="bi bi-person-plus fs-3"></i>
                     </div>
                 </div>
             </div>
@@ -207,25 +220,37 @@
     <!-- Charts Row -->
     <div class="row g-4 mb-4">
         <!-- Chart 1: Revenue by Treatment -->
-        <div class="col-12 col-lg-7">
+        <div class="col-12 col-xl-5">
             <div class="card clinic-card p-4 h-100">
                 <h5 class="fw-bold mb-3">
                     <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Revenue by Dental Procedure ($)
                 </h5>
                 <div>
-                    <canvas id="treatmentRevenueChart" style="max-height: 320px;"></canvas>
+                    <canvas id="treatmentRevenueChart" style="max-height: 280px;"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Chart 2: Doctor Workload Breakdown -->
-        <div class="col-12 col-lg-5">
+        <div class="col-12 col-md-6 col-xl-4">
             <div class="card clinic-card p-4 h-100">
                 <h5 class="fw-bold mb-3">
-                    <i class="bi bi-pie-chart-fill me-2 text-success"></i>Appointments per Attending Doctor
+                    <i class="bi bi-pie-chart-fill me-2 text-success"></i>Doctor Appointments
                 </h5>
                 <div>
-                    <canvas id="doctorWorkloadChart" style="max-height: 320px;"></canvas>
+                    <canvas id="doctorWorkloadChart" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: Patient Retention Donut -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card clinic-card p-4 h-100">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-people-fill me-2 text-info"></i>Patient Retention
+                </h5>
+                <div>
+                    <canvas id="retentionChart" style="max-height: 280px;"></canvas>
                 </div>
             </div>
         </div>
@@ -255,8 +280,7 @@
                             <tbody>
                             <% if (treatmentReports != null && !treatmentReports.isEmpty()) {
                                 for (ReportDAO.TreatmentReportItem item : treatmentReports) {
-                            %>
-                                <tr>
+                            %>\n                                <tr>
                                     <td class="ps-4 fw-semibold"><%= item.getTreatmentName() %></td>
                                     <td class="text-center"><span class="badge bg-body-secondary text-body border"><%= item.getAppointmentCount() %></span></td>
                                     <td class="text-end">$<%= String.format("%.2f", item.getAverageFee()) %></td>
@@ -296,8 +320,7 @@
                             <tbody>
                             <% if (doctorReports != null && !doctorReports.isEmpty()) {
                                 for (ReportDAO.DoctorReportItem doc : doctorReports) {
-                            %>
-                                <tr>
+                            %>\n                                <tr>
                                     <td class="ps-4">
                                         <div class="fw-semibold"><%= doc.getDoctorName() %></div>
                                         <small class="text-muted"><%= doc.getSpecialization() %></small>
@@ -377,6 +400,32 @@
                         '#ffc107',
                         '#6f42c1',
                         '#fd7e14'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Chart 3: Doughnut Chart for Patient Retention
+        const retentionLabels = <%= retentionLabelsJson != null ? retentionLabelsJson : "[]" %>;
+        const retentionCounts = <%= retentionCountsJson != null ? retentionCountsJson : "[]" %>;
+
+        const ctxRetention = document.getElementById('retentionChart').getContext('2d');
+        new Chart(ctxRetention, {
+            type: 'doughnut',
+            data: {
+                labels: retentionLabels,
+                datasets: [{
+                    data: retentionCounts,
+                    backgroundColor: [
+                        '#0dcaf0',
+                        '#198754'
                     ]
                 }]
             },
