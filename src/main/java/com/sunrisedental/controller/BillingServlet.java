@@ -2,11 +2,15 @@ package com.sunrisedental.controller;
 
 import com.sunrisedental.dao.AppointmentDAO;
 import com.sunrisedental.dao.BillDAO;
+import com.sunrisedental.dao.PatientDAO;
 import com.sunrisedental.dao.impl.AppointmentDAOImpl;
 import com.sunrisedental.dao.impl.BillDAOImpl;
+import com.sunrisedental.dao.impl.PatientDAOImpl;
 import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Bill;
+import com.sunrisedental.model.Patient;
 import com.sunrisedental.service.BillingService;
+import com.sunrisedental.service.EmailNotificationService;
 import com.sunrisedental.service.GeminiCarePlanService;
 import com.sunrisedental.util.ValidationUtil;
 import jakarta.servlet.ServletException;
@@ -21,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  * Controller handling dental invoice generation, fee calculation, stored procedure billing,
- * receipt rendering, and Google Gemini AI personalized post-care plan generation.
+ * receipt rendering, automated email delivery, and Google Gemini AI personalized post-care plan generation.
  */
 @WebServlet(name = "BillingServlet", urlPatterns = {"/billing"})
 public class BillingServlet extends HttpServlet {
@@ -30,15 +34,19 @@ public class BillingServlet extends HttpServlet {
 
     private AppointmentDAO appointmentDAO;
     private BillDAO billDAO;
+    private PatientDAO patientDAO;
     private BillingService billingService;
     private GeminiCarePlanService geminiCarePlanService;
+    private EmailNotificationService emailNotificationService;
 
     @Override
     public void init() {
         this.appointmentDAO = new AppointmentDAOImpl();
         this.billDAO = new BillDAOImpl();
+        this.patientDAO = new PatientDAOImpl();
         this.billingService = new BillingService();
         this.geminiCarePlanService = new GeminiCarePlanService();
+        this.emailNotificationService = new EmailNotificationService();
     }
 
     // Setters for unit testing and DI
@@ -50,12 +58,20 @@ public class BillingServlet extends HttpServlet {
         this.billDAO = billDAO;
     }
 
+    public void setPatientDAO(PatientDAO patientDAO) {
+        this.patientDAO = patientDAO;
+    }
+
     public void setBillingService(BillingService billingService) {
         this.billingService = billingService;
     }
 
     public void setGeminiCarePlanService(GeminiCarePlanService geminiCarePlanService) {
         this.geminiCarePlanService = geminiCarePlanService;
+    }
+
+    public void setEmailNotificationService(EmailNotificationService emailNotificationService) {
+        this.emailNotificationService = emailNotificationService;
     }
 
     @Override
@@ -168,6 +184,22 @@ public class BillingServlet extends HttpServlet {
                     appointment.getPatientName()
             );
             request.setAttribute("geminiAdvice", geminiAdvice);
+
+            // Automated Invoice Email Dispatch if Patient has registered email
+            try {
+                Patient patient = patientDAO.getPatientById(appointment.getPatientId());
+                if (patient != null && patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
+                    emailNotificationService.sendInvoiceReceiptAsync(
+                            appointment,
+                            bill,
+                            patient.getEmail().trim(),
+                            geminiAdvice
+                    );
+                    LOGGER.info("Dispatched automated billing email receipt to patient email: " + patient.getEmail());
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Could not trigger automated billing email receipt: " + e.getMessage(), e);
+            }
 
             String receiptText = billingService.generateReceipt(bill, appointment);
             request.setAttribute("bill", bill);

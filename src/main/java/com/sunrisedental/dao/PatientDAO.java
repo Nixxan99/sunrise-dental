@@ -37,7 +37,7 @@ public interface PatientDAO {
 
     /**
      * Registers a new patient record and returns the generated primary key ID.
-     * If the patient exists by contact number, updates demographic details and returns the existing ID.
+     * If the patient exists by contact number, updates demographic details (including email) and returns the existing ID.
      *
      * @param patient patient entity to register
      * @return generated or existing patient_id (>0 on success, -1 on failure)
@@ -45,12 +45,20 @@ public interface PatientDAO {
     int registerPatient(Patient patient);
 
     /**
-     * Updates an existing patient's full name, address, and contact number.
+     * Updates an existing patient's full name, address, contact number, and email.
      *
      * @param patient patient entity with updated details
      * @return true if updated successfully, false otherwise
      */
     boolean updatePatient(Patient patient);
+
+    /**
+     * Safely deletes a patient by ID if no blocking constraints exist.
+     *
+     * @param patientId ID of the patient to delete
+     * @return true if deleted successfully, false otherwise
+     */
+    boolean deletePatient(int patientId);
 
     /**
      * Retrieves all registered patients ordered by name.
@@ -60,7 +68,7 @@ public interface PatientDAO {
     List<Patient> getAllPatients();
 
     /**
-     * Searches patients by full name or contact number (case-insensitive substring match).
+     * Searches patients by full name, contact number, or email (case-insensitive substring match).
      *
      * @param query search query
      * @return matching patients list

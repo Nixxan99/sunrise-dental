@@ -111,7 +111,7 @@
             <h2 class="fw-bold mb-1">
                 <i class="bi bi-person-badge text-primary me-2"></i>Patient Profiles & Registry
             </h2>
-            <p class="text-muted mb-0">Manage persistent patient records, lookup contact info, and track clinical appointment histories.</p>
+            <p class="text-muted mb-0">Manage persistent patient records, lookup contact info, centralize emails, and track clinical appointment histories.</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
             <button type="button" class="btn btn-primary-gradient shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newPatientModal">
@@ -131,7 +131,12 @@
         </div>
     <% } else if ("updated".equals(successParam)) { %>
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>Patient demographic details updated successfully!
+            <i class="bi bi-check-circle-fill me-2"></i>Patient profile and contact details updated successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } else if ("deleted".equals(successParam)) { %>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Patient profile deleted successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <% } %>
@@ -152,19 +157,25 @@
         </div>
         <form action="<%= request.getContextPath() %>/patients" method="post" class="row g-3">
             <input type="hidden" name="patientId" value="<%= editPatient.getPatientId() %>">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="form-floating">
                     <input type="text" class="form-control" id="editFullName" name="fullName" value="<%= editPatient.getFullName() %>" required>
                     <label for="editFullName">Patient Full Name <span class="text-danger">*</span></label>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="form-floating">
                     <input type="tel" class="form-control" id="editContactNumber" name="contactNumber" value="<%= editPatient.getContactNumber() %>" required>
                     <label for="editContactNumber">Contact Number <span class="text-danger">*</span></label>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="editEmail" name="email" value="<%= editPatient.getEmail() != null ? editPatient.getEmail() : "" %>">
+                    <label for="editEmail">Patient Email</label>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="form-floating">
                     <input type="text" class="form-control" id="editAddress" name="address" value="<%= editPatient.getAddress() != null ? editPatient.getAddress() : "" %>">
                     <label for="editAddress">Residential Address / City</label>
@@ -186,7 +197,7 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control border-start-0 ps-0" name="q" placeholder="Search by patient full name or phone number..." value="<%= searchQuery != null ? searchQuery : "" %>">
+                    <input type="text" class="form-control border-start-0 ps-0" name="q" placeholder="Search by name, contact number, or email..." value="<%= searchQuery != null ? searchQuery : "" %>">
                     <button class="btn btn-primary-gradient px-4" type="submit">Search</button>
                     <% if (searchQuery != null && !searchQuery.isEmpty()) { %>
                         <a href="<%= request.getContextPath() %>/patients" class="btn btn-outline-secondary" title="Clear search">
@@ -207,9 +218,10 @@
             <table class="table table-hover align-middle table-clinic mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4" style="width: 100px;">Patient ID</th>
+                        <th class="ps-4" style="width: 90px;">ID</th>
                         <th>Full Name</th>
                         <th>Contact Number</th>
+                        <th>Email Address</th>
                         <th>Address / City</th>
                         <th class="text-end pe-4" style="width: 320px;">Actions</th>
                     </tr>
@@ -228,6 +240,13 @@
                                 <i class="bi bi-telephone me-1 text-primary"></i><%= p.getContactNumber() %>
                             </span>
                         </td>
+                        <td>
+                            <% if (p.getEmail() != null && !p.getEmail().trim().isEmpty()) { %>
+                                <span class="text-primary small"><i class="bi bi-envelope me-1"></i><%= p.getEmail() %></span>
+                            <% } else { %>
+                                <span class="text-muted small"><em>None</em></span>
+                            <% } %>
+                        </td>
                         <td class="text-muted"><%= (p.getAddress() != null && !p.getAddress().trim().isEmpty()) ? p.getAddress() : "—" %></td>
                         <td class="text-end pe-4">
                             <a href="<%= request.getContextPath() %>/patients?action=view&id=<%= p.getPatientId() %>" class="btn btn-outline-primary btn-sm me-1" title="View Appointment History & Clinical Timeline">
@@ -236,15 +255,21 @@
                             <a href="<%= request.getContextPath() %>/appointments?action=new&patientId=<%= p.getPatientId() %>" class="btn btn-outline-success btn-sm me-1" title="Schedule Appointment for this Patient">
                                 <i class="bi bi-calendar-plus me-1"></i>Book
                             </a>
-                            <a href="<%= request.getContextPath() %>/patients?action=edit&id=<%= p.getPatientId() %>" class="btn btn-outline-secondary btn-sm" title="Edit Patient Details">
+                            <a href="<%= request.getContextPath() %>/patients?action=edit&id=<%= p.getPatientId() %>" class="btn btn-outline-secondary btn-sm me-1" title="Edit Patient Details">
                                 <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="<%= request.getContextPath() %>/patients?action=delete&id=<%= p.getPatientId() %>"
+                               class="btn btn-outline-danger btn-sm"
+                               title="Delete Patient Profile"
+                               onclick="return confirm('Are you sure you want to delete patient <%= p.getFullName().replace("'", "\\'") %> (ID #<%= p.getPatientId() %>)? This will remove related history.');">
+                                <i class="bi bi-trash"></i>
                             </a>
                         </td>
                     </tr>
                 <%  }
                    } else { %>
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
                             No patient records found<%= (searchQuery != null && !searchQuery.isEmpty()) ? " matching \"" + searchQuery + "\"" : "" %>.
                             <div class="mt-2">
@@ -282,6 +307,11 @@
                     <div class="form-floating mb-3">
                         <input type="tel" class="form-control" id="modalContact" name="contactNumber" placeholder="0771234567" required>
                         <label for="modalContact">Contact Phone Number <span class="text-danger">*</span></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="modalEmail" name="email" placeholder="patient@example.com">
+                        <label for="modalEmail">Patient Email Address (Optional)</label>
                     </div>
 
                     <div class="form-floating mb-3">

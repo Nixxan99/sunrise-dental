@@ -1,10 +1,13 @@
 package com.sunrisedental.service;
 
 import com.sunrisedental.dao.NotificationLogDAO;
+import com.sunrisedental.model.Appointment;
+import com.sunrisedental.model.Bill;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -14,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests verifying asynchronous, non-blocking Gmail SMTP email delivery
- * and simulated fallback auditing.
+ * and simulated fallback auditing for appointment confirmations and invoice receipts.
  */
 @DisplayName("EmailNotificationService Asynchronous Gmail Delivery Tests")
 class EmailNotificationServiceTest {
@@ -84,5 +87,54 @@ class EmailNotificationServiceTest {
         assertFalse(res1);
         assertFalse(res2);
         assertTrue(capturedLogs.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should deliver invoice receipt email with breakdown and clinical advice")
+    void shouldDeliverInvoiceReceipt() {
+        Appointment appt = new Appointment();
+        appt.setAppointmentNumber(801);
+        appt.setPatientName("Anura Kumara");
+        appt.setDentistName("Dr. Anoma Silva");
+        appt.setTreatmentName("Root Canal Therapy");
+        appt.setAppointmentDate(LocalDate.now());
+
+        Bill bill = new Bill(801, 1500.00, 8500.00, "PAID");
+
+        String advice = "Avoid hot drinks for 24 hours. Take prescribed pain relief if necessary.";
+
+        boolean result = emailService.sendInvoiceReceipt(appt, bill, "anura@example.com", advice);
+        assertTrue(result);
+        assertEquals(1, capturedLogs.size());
+
+        String log = capturedLogs.get(0);
+        assertTrue(log.startsWith("anura@example.com:SENT:"));
+        assertTrue(log.contains("INV-801"));
+        assertTrue(log.contains("Treatment Fee    : $8500.00"));
+        assertTrue(log.contains("Consultation Fee : $1500.00"));
+        assertTrue(log.contains("Total Amount     : $10000.00"));
+        assertTrue(log.contains("Avoid hot drinks for 24 hours"));
+    }
+
+    @Test
+    @DisplayName("Should deliver invoice receipt asynchronously")
+    void shouldDeliverInvoiceReceiptAsync() throws Exception {
+        Appointment appt = new Appointment();
+        appt.setAppointmentNumber(802);
+        appt.setPatientName("Sunil Shantha");
+        appt.setDentistName("Dr. Kasun Perera");
+        appt.setTreatmentName("Teeth Cleaning & Scaling");
+        appt.setAppointmentDate(LocalDate.now());
+
+        Bill bill = new Bill(802, 1500.00, 2500.00, "PAID");
+
+        CompletableFuture<Boolean> future = emailService.sendInvoiceReceiptAsync(
+                appt, bill, "sunil@example.com", "Rinse gently with warm saline solution."
+        );
+
+        assertNotNull(future);
+        Boolean res = future.get(5, TimeUnit.SECONDS);
+        assertTrue(res);
+        assertTrue(capturedLogs.stream().anyMatch(l -> l.contains("INV-802")));
     }
 }

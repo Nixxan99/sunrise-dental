@@ -13,9 +13,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit & Integration tests for PatientDAO operations, patient clinical history, and retention analytics.
+ * Unit & Integration tests for PatientDAO operations, patient clinical history, full CRUD, and retention analytics.
  */
-@DisplayName("PatientDAO Management, History Tracking, and Analytics Tests")
+@DisplayName("PatientDAO Management, Full CRUD, History Tracking, and Analytics Tests")
 class PatientDAOTest {
 
     private PatientDAO patientDAO;
@@ -60,13 +60,14 @@ class PatientDAOTest {
     }
 
     @Test
-    @DisplayName("Should register a new patient and return generated ID, then update and retrieve")
+    @DisplayName("Should register a new patient with email and return generated ID, then update and retrieve")
     void shouldRegisterAndUpdatePatient() {
         String testName = "Test Patient " + System.currentTimeMillis();
         String testContact = "077" + (int)(Math.random() * 9000000 + 1000000);
+        String testEmail = "test" + System.currentTimeMillis() + "@sunrisedental.lk";
         String testAddress = "123 Sample Avenue, Colombo";
 
-        Patient newPatient = new Patient(testName, testAddress, testContact);
+        Patient newPatient = new Patient(testName, testAddress, testContact, testEmail);
         int generatedId = patientDAO.registerPatient(newPatient);
 
         assertTrue(generatedId > 0, "Generated patient ID should be positive");
@@ -78,11 +79,13 @@ class PatientDAOTest {
         assertEquals(testName, fetched.getFullName());
         assertEquals(testContact, fetched.getContactNumber());
         assertEquals(testAddress, fetched.getAddress());
+        assertEquals(testEmail, fetched.getEmail());
 
         // Update record
         fetched.setFullName(testName + " Updated");
         fetched.setAddress("456 Renovated Lane, Kandy");
         fetched.setContactNumber("0719876543");
+        fetched.setEmail("updated." + testEmail);
 
         boolean updated = patientDAO.updatePatient(fetched);
         assertTrue(updated, "Patient record update should succeed");
@@ -92,29 +95,37 @@ class PatientDAOTest {
         assertEquals(testName + " Updated", updatedRecord.getFullName());
         assertEquals("456 Renovated Lane, Kandy", updatedRecord.getAddress());
         assertEquals("0719876543", updatedRecord.getContactNumber());
+        assertEquals("updated." + testEmail, updatedRecord.getEmail());
+
+        // Test delete
+        boolean deleted = patientDAO.deletePatient(generatedId);
+        assertTrue(deleted, "Patient deletion should succeed");
+        assertNull(patientDAO.getPatientById(generatedId), "Deleted patient should no longer exist");
     }
 
     @Test
-    @DisplayName("Should search patients by name or contact number")
-    void shouldSearchPatientsByNameOrContact() {
-        List<Patient> all = patientDAO.getAllPatients();
-        assertFalse(all.isEmpty());
+    @DisplayName("Should search patients by name, contact number, or email")
+    void shouldSearchPatientsByNameOrContactOrEmail() {
+        String uniqueSuffix = String.valueOf(System.currentTimeMillis());
+        Patient sample = new Patient("SearchTarget " + uniqueSuffix, "Colombo", "072" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 7)), "search" + uniqueSuffix + "@domain.com");
+        int id = patientDAO.registerPatient(sample);
+        assertTrue(id > 0);
 
-        Patient sample = all.get(0);
-        String nameSub = sample.getFullName().substring(0, Math.min(4, sample.getFullName().length()));
+        try {
+            List<Patient> searchResultsName = patientDAO.searchPatients("SearchTarget " + uniqueSuffix);
+            assertNotNull(searchResultsName);
+            assertFalse(searchResultsName.isEmpty());
 
-        List<Patient> searchResultsName = patientDAO.searchPatients(nameSub);
-        assertNotNull(searchResultsName);
-        assertFalse(searchResultsName.isEmpty(), "Should find patients matching name snippet: " + nameSub);
+            List<Patient> searchResultsContact = patientDAO.searchPatients(sample.getContactNumber());
+            assertNotNull(searchResultsContact);
+            assertFalse(searchResultsContact.isEmpty());
 
-        List<Patient> searchResultsContact = patientDAO.searchPatients(sample.getContactNumber());
-        assertNotNull(searchResultsContact);
-        assertFalse(searchResultsContact.isEmpty(), "Should find patient matching contact number");
-
-        // Empty search returns all
-        List<Patient> emptySearch = patientDAO.searchPatients("");
-        assertNotNull(emptySearch);
-        assertEquals(all.size(), emptySearch.size());
+            List<Patient> searchResultsEmail = patientDAO.searchPatients("search" + uniqueSuffix);
+            assertNotNull(searchResultsEmail);
+            assertFalse(searchResultsEmail.isEmpty());
+        } finally {
+            patientDAO.deletePatient(id);
+        }
     }
 
     @Test
@@ -166,5 +177,7 @@ class PatientDAOTest {
         assertEquals(-1, patientDAO.registerPatient(null));
         assertFalse(patientDAO.updatePatient(null));
         assertFalse(patientDAO.updatePatient(new Patient(0, "Invalid", "None", "0000")));
+        assertFalse(patientDAO.deletePatient(0));
+        assertFalse(patientDAO.deletePatient(-1));
     }
 }

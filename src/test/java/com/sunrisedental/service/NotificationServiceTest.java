@@ -53,6 +53,8 @@ class NotificationServiceTest {
             @Override
             public boolean updatePatient(Patient patient) { return true; }
             @Override
+            public boolean deletePatient(int patientId) { return true; }
+            @Override
             public Patient getPatientById(int patientId) {
                 Patient p = new Patient();
                 p.setPatientId(patientId);

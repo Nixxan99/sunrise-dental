@@ -88,8 +88,10 @@ CREATE TABLE patients (
     full_name VARCHAR(100) NOT NULL,
     address VARCHAR(255),
     contact_number VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_patient_contact (contact_number)
+    INDEX idx_patient_contact (contact_number),
+    INDEX idx_patient_email (email)
 ) ENGINE=InnoDB;
 
 -- ============================================================================
@@ -204,10 +206,10 @@ INSERT INTO treatments (treatment_name, standard_fee) VALUES
 ('Dental Crown & Bridge Fitting', 18000.00);
 
 -- 4. Seed Patients
-INSERT INTO patients (full_name, address, contact_number) VALUES
-('Nimal Fernando', 'No. 45 Galle Road, Colombo 03', '0773344556'),
-('Sunethra Bandara', 'No. 12 Kandy Road, Kiribathgoda', '0712233445'),
-('Chaminda Vass', 'No. 78 Marine Drive, Bambalapitiya', '0789988776');
+INSERT INTO patients (full_name, address, contact_number, email) VALUES
+('Nimal Fernando', 'No. 45 Galle Road, Colombo 03', '0773344556', 'nimal.fernando@example.com'),
+('Sunethra Bandara', 'No. 12 Kandy Road, Kiribathgoda', '0712233445', 'sunethra.b@example.com'),
+('Chaminda Vass', 'No. 78 Marine Drive, Bambalapitiya', '0789988776', 'chaminda.vass@example.com');
 
 -- 5. Seed Initial Appointments
 INSERT INTO appointments (patient_id, dentist_id, treatment_id, appointment_date, appointment_time, status) VALUES

@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +26,31 @@ import java.util.logging.Logger;
 public class PatientDAOImpl implements PatientDAO {
 
     private static final Logger LOGGER = Logger.getLogger(PatientDAOImpl.class.getName());
+    private static volatile boolean schemaVerified = false;
+
+    public PatientDAOImpl() {
+        ensureSchema();
+    }
+
+    /**
+     * Ensures the email column exists in the patients table for backward-compatible schema migration.
+     */
+    private static synchronized void ensureSchema() {
+        if (schemaVerified) return;
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS email VARCHAR(100)");
+            schemaVerified = true;
+        } catch (Exception e) {
+            // Ignore if column already exists or IF NOT EXISTS syntax variance
+            schemaVerified = true;
+            LOGGER.log(Level.FINE, "Schema check on patients email column: " + e.getMessage());
+        }
+    }
 
     @Override
     public Patient getPatientById(int patientId) {
-        String sql = "SELECT patient_id, full_name, address, contact_number FROM patients WHERE patient_id = ?";
+        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients WHERE patient_id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -51,7 +71,7 @@ public class PatientDAOImpl implements PatientDAO {
         if (contactNumber == null || contactNumber.trim().isEmpty()) {
             return null;
         }
-        String sql = "SELECT patient_id, full_name, address, contact_number FROM patients WHERE contact_number = ?";
+        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients WHERE contact_number = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -86,18 +106,22 @@ public class PatientDAOImpl implements PatientDAO {
             if (patient.getAddress() != null && !patient.getAddress().trim().isEmpty()) {
                 existing.setAddress(patient.getAddress());
             }
+            if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
+                existing.setEmail(patient.getEmail());
+            }
             updatePatient(existing);
             patient.setPatientId(existing.getPatientId());
             return existing.getPatientId();
         }
 
-        String sql = "INSERT INTO patients (full_name, address, contact_number) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO patients (full_name, address, contact_number, email) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, patient.getFullName());
             ps.setString(2, patient.getAddress() != null ? patient.getAddress() : "");
             ps.setString(3, patient.getContactNumber() != null ? patient.getContactNumber().trim() : "");
+            ps.setString(4, patient.getEmail() != null ? patient.getEmail().trim() : "");
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
@@ -120,14 +144,15 @@ public class PatientDAOImpl implements PatientDAO {
         if (patient == null || patient.getPatientId() <= 0) {
             return false;
         }
-        String sql = "UPDATE patients SET full_name = ?, address = ?, contact_number = ? WHERE patient_id = ?";
+        String sql = "UPDATE patients SET full_name = ?, address = ?, contact_number = ?, email = ? WHERE patient_id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, patient.getFullName());
             ps.setString(2, patient.getAddress());
             ps.setString(3, patient.getContactNumber());
-            ps.setInt(4, patient.getPatientId());
+            ps.setString(4, patient.getEmail() != null ? patient.getEmail().trim() : "");
+            ps.setInt(5, patient.getPatientId());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -137,9 +162,51 @@ public class PatientDAOImpl implements PatientDAO {
     }
 
     @Override
+    public boolean deletePatient(int patientId) {
+        if (patientId <= 0) {
+            return false;
+        }
+
+        // Clean up or check appointments if foreign key RESTRICT exists
+        String deleteBillsSql = "DELETE FROM bills WHERE appointment_number IN (SELECT appointment_number FROM appointments WHERE patient_id = ?)";
+        String deleteApptsSql = "DELETE FROM appointments WHERE patient_id = ?";
+        String deletePatientSql = "DELETE FROM patients WHERE patient_id = ?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement psBills = conn.prepareStatement(deleteBillsSql)) {
+                    psBills.setInt(1, patientId);
+                    psBills.executeUpdate();
+                }
+                try (PreparedStatement psAppts = conn.prepareStatement(deleteApptsSql)) {
+                    psAppts.setInt(1, patientId);
+                    psAppts.executeUpdate();
+                }
+                int affected;
+                try (PreparedStatement psPat = conn.prepareStatement(deletePatientSql)) {
+                    psPat.setInt(1, patientId);
+                    affected = psPat.executeUpdate();
+                }
+                conn.commit();
+                return affected > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                LOGGER.log(Level.SEVERE, "Transaction error deleting patient id: " + patientId, e);
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error deleting patient id: " + patientId, e);
+            return false;
+        }
+    }
+
+    @Override
     public List<Patient> getAllPatients() {
         List<Patient> list = new ArrayList<>();
-        String sql = "SELECT patient_id, full_name, address, contact_number FROM patients ORDER BY full_name";
+        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients ORDER BY full_name";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -160,8 +227,8 @@ public class PatientDAOImpl implements PatientDAO {
         }
 
         List<Patient> list = new ArrayList<>();
-        String sql = "SELECT patient_id, full_name, address, contact_number FROM patients " +
-                     "WHERE LOWER(full_name) LIKE ? OR contact_number LIKE ? ORDER BY full_name";
+        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients " +
+                     "WHERE LOWER(full_name) LIKE ? OR contact_number LIKE ? OR LOWER(email) LIKE ? ORDER BY full_name";
         String pattern = "%" + query.trim().toLowerCase() + "%";
 
         try (Connection conn = DBConnection.getInstance().getConnection();
@@ -169,6 +236,7 @@ public class PatientDAOImpl implements PatientDAO {
 
             ps.setString(1, pattern);
             ps.setString(2, pattern);
+            ps.setString(3, pattern);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -303,6 +371,11 @@ public class PatientDAOImpl implements PatientDAO {
         patient.setFullName(rs.getString("full_name"));
         patient.setAddress(rs.getString("address"));
         patient.setContactNumber(rs.getString("contact_number"));
+        try {
+            patient.setEmail(rs.getString("email"));
+        } catch (SQLException ignored) {
+            // Column may be missing in legacy result sets
+        }
         return patient;
     }
 }

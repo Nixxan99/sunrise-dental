@@ -21,7 +21,6 @@
     String patientName = (String) request.getAttribute("enteredPatientName");
     String address = (String) request.getAttribute("enteredAddress");
     String contactNumber = (String) request.getAttribute("enteredContactNumber");
-    String patientEmail = (String) request.getAttribute("enteredPatientEmail");
     String enteredDentistId = (String) request.getAttribute("enteredDentistId");
     String enteredTreatmentId = (String) request.getAttribute("enteredTreatmentId");
     String enteredDate = (String) request.getAttribute("enteredDate");
@@ -165,7 +164,7 @@
                                         data-contact="<%= p.getContactNumber() %>"
                                         data-address="<%= p.getAddress() != null ? p.getAddress() : "" %>"
                                         <%= isSel ? "selected" : "" %>>
-                                    <%= p.getFullName() %> (<%= p.getContactNumber() %>) - ID #<%= p.getPatientId() %>
+                                    <%= p.getFullName() %> (<%= p.getContactNumber() %>) <%= (p.getEmail() != null && !p.getEmail().isEmpty()) ? "- " + p.getEmail() : "" %>
                                 </option>
                             <% } %>
                         </select>
@@ -197,22 +196,12 @@
                             <small class="text-muted ms-1">Format: 07XXXXXXXX or +947XXXXXXXX</small>
                         </div>
 
-                        <div class="col-12 col-md-6">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="patientEmail" name="patientEmail"
-                                       placeholder="Patient Email"
-                                       value="<%= patientEmail != null ? patientEmail : "" %>">
-                                <label for="patientEmail">Patient Email (Optional for Gmail SMTP Alert)</label>
-                            </div>
-                            <small class="text-muted ms-1">Instant confirmation sent via Gmail SMTP</small>
-                        </div>
-
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <div class="form-floating">
                                 <input type="text" class="form-control" id="address" name="address"
                                        placeholder="Residential Address"
                                        value="<%= address != null ? address : "" %>">
-                                <label for="address">Residential Address</label>
+                                <label for="address">Residential Address / City</label>
                             </div>
                         </div>
                     </div>

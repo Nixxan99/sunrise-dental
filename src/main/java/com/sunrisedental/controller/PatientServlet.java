@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Controller servlet for persistent patient management, patient lookup, and appointment history tracking.
+ * Controller servlet for persistent patient management, full CRUD operations, patient lookup, and appointment history tracking.
  * Handles /patients endpoint.
  */
 @WebServlet(name = "PatientServlet", urlPatterns = {"/patients"})
@@ -61,6 +61,9 @@ public class PatientServlet extends HttpServlet {
             case "edit":
                 handleEditPatient(request, response);
                 break;
+            case "delete":
+                handleDeletePatient(request, response);
+                break;
             case "search":
             case "list":
             default:
@@ -84,6 +87,7 @@ public class PatientServlet extends HttpServlet {
         String fullName = request.getParameter("fullName");
         String address = request.getParameter("address");
         String contactNumber = request.getParameter("contactNumber");
+        String email = request.getParameter("email");
 
         if (fullName == null || fullName.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Patient full name is required.");
@@ -97,7 +101,12 @@ public class PatientServlet extends HttpServlet {
             return;
         }
 
-        Patient patient = new Patient(fullName.trim(), address != null ? address.trim() : "", contactNumber.trim());
+        Patient patient = new Patient(
+                fullName.trim(),
+                address != null ? address.trim() : "",
+                contactNumber.trim(),
+                email != null ? email.trim() : ""
+        );
 
         if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
             try {
@@ -126,6 +135,26 @@ public class PatientServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Failed to register patient profile.");
             handleListPatients(request, response);
         }
+    }
+
+    private void handleDeletePatient(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null && !idStr.trim().isEmpty()) {
+            try {
+                int patientId = Integer.parseInt(idStr.trim());
+                boolean deleted = patientDAO.deletePatient(patientId);
+                if (deleted) {
+                    response.sendRedirect(request.getContextPath() + "/patients?action=list&success=deleted");
+                    return;
+                } else {
+                    request.setAttribute("errorMessage", "Unable to delete patient profile (ID #" + patientId + ").");
+                }
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Invalid patient ID format.");
+            }
+        }
+        handleListPatients(request, response);
     }
 
     private void handleListPatients(HttpServletRequest request, HttpServletResponse response)

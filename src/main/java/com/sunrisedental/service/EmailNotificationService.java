@@ -2,6 +2,8 @@ package com.sunrisedental.service;
 
 import com.sunrisedental.dao.NotificationLogDAO;
 import com.sunrisedental.dao.impl.NotificationLogDAOImpl;
+import com.sunrisedental.model.Appointment;
+import com.sunrisedental.model.Bill;
 import com.sunrisedental.util.ConfigUtil;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -119,6 +121,83 @@ public class EmailNotificationService {
                 safePatient, appointmentNumber, safeDoctor, safeTreatment, safeDate, safeTime
         );
 
+        return dispatchEmail(recipientEmail.trim(), subject, body);
+    }
+
+    /**
+     * Dispatches an invoice receipt email asynchronously with itemized breakdown and AI care plan.
+     */
+    public CompletableFuture<Boolean> sendInvoiceReceiptAsync(
+            Appointment appt,
+            Bill bill,
+            String recipientEmail,
+            String careAdvice) {
+
+        return CompletableFuture.supplyAsync(() -> sendInvoiceReceipt(
+                appt, bill, recipientEmail, careAdvice
+        ), executorService);
+    }
+
+    /**
+     * Synchronous invoice receipt email delivery.
+     */
+    public boolean sendInvoiceReceipt(
+            Appointment appt,
+            Bill bill,
+            String recipientEmail,
+            String careAdvice) {
+
+        if (recipientEmail == null || recipientEmail.trim().isEmpty()) {
+            LOGGER.info("No recipient email provided for billing receipt. Skipping email dispatch.");
+            return false;
+        }
+
+        int apptNo = (appt != null) ? appt.getAppointmentNumber() : (bill != null ? bill.getAppointmentNumber() : 0);
+        String patientName = (appt != null && appt.getPatientName() != null) ? appt.getPatientName() : "Valued Patient";
+        String dentistName = (appt != null && appt.getDentistName() != null) ? appt.getDentistName() : "Attending Dentist";
+        String treatmentName = (appt != null && appt.getTreatmentName() != null) ? appt.getTreatmentName() : "Dental Treatment";
+        String apptDate = (appt != null && appt.getAppointmentDate() != null) ? appt.getAppointmentDate().toString() : "Recent Date";
+
+        double treatmentCost = (bill != null) ? bill.getTreatmentCost() : 0.00;
+        double consultationFee = (bill != null) ? bill.getConsultationFee() : 1500.00;
+        double totalAmount = (bill != null) ? bill.getTotalAmount() : (treatmentCost + consultationFee);
+        String paymentStatus = (bill != null && bill.getPaymentStatus() != null) ? bill.getPaymentStatus() : "PAID";
+
+        String subject = "Payment Receipt & Care Summary - Invoice #INV-" + apptNo + " - Sunrise Dental Clinic";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Dear ").append(patientName).append(",\n\n");
+        sb.append("Thank you for visiting Sunrise Dental Clinic. Here is your official payment receipt and clinical summary:\n\n");
+        sb.append("====================================================\n");
+        sb.append("             SUNRISE DENTAL CLINIC RECEIPT          \n");
+        sb.append("====================================================\n");
+        sb.append(String.format("Invoice Number   : INV-%d\n", apptNo));
+        sb.append(String.format("Appointment Ref  : #%d\n", apptNo));
+        sb.append(String.format("Date             : %s\n", apptDate));
+        sb.append(String.format("Attending Doctor : %s\n", dentistName));
+        sb.append(String.format("Treatment Service: %s\n", treatmentName));
+        sb.append("----------------------------------------------------\n");
+        sb.append(String.format("Treatment Fee    : $%.2f\n", treatmentCost));
+        sb.append(String.format("Consultation Fee : $%.2f\n", consultationFee));
+        sb.append(String.format("Total Amount     : $%.2f\n", totalAmount));
+        sb.append(String.format("Payment Status   : %s\n", paymentStatus));
+        sb.append("====================================================\n\n");
+
+        if (careAdvice != null && !careAdvice.trim().isEmpty()) {
+            sb.append("PERSONALIZED POST-TREATMENT CARE INSTRUCTIONS:\n");
+            sb.append(careAdvice.trim()).append("\n\n");
+        }
+
+        sb.append("If you have questions regarding your invoice or dental care, please contact our support desk at +94 11 234 5678.\n\n");
+        sb.append("Warm regards,\n");
+        sb.append("Sunrise Dental Clinic Administration\n");
+        sb.append("123 Healthway Boulevard, Suite 400, Colombo\n");
+
+        String body = sb.toString();
+        return dispatchEmail(recipientEmail.trim(), subject, body);
+    }
+
+    private boolean dispatchEmail(String recipient, String subject, String body) {
         boolean deliveredViaSmtp = false;
 
         // If credentials are configured, attempt real Gmail SMTP transmission
@@ -142,13 +221,13 @@ public class EmailNotificationService {
 
                 Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(senderEmail, "Sunrise Dental Clinic"));
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim()));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
                 message.setSubject(subject);
                 message.setText(body);
 
                 Transport.send(message);
                 deliveredViaSmtp = true;
-                LOGGER.info("Successfully sent SMTP confirmation email to " + recipientEmail + " via Gmail.");
+                LOGGER.info("Successfully sent SMTP email to " + recipient + " via Gmail.");
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Gmail SMTP dispatch failed (" + e.getMessage() + "). Falling back to simulated log.", e);
             }
@@ -158,13 +237,13 @@ public class EmailNotificationService {
         if (!deliveredViaSmtp) {
             LOGGER.info(String.format(
                     "[GMAIL SMTP NOTIFICATION DISPATCH (SIMULATED)]\nTo: %s\nSubject: %s\n\n%s",
-                    recipientEmail.trim(), subject, body
+                    recipient, subject, body
             ));
         }
 
         // Persist audit trail into notification_logs
         try {
-            notificationLogDAO.logNotification(recipientEmail.trim(), body, "SENT");
+            notificationLogDAO.logNotification(recipient, body, "SENT");
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to persist email notification audit log: " + e.getMessage(), e);
         }

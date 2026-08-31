@@ -14,6 +14,7 @@ public class Patient implements Serializable {
     private String fullName;
     private String address;
     private String contactNumber;
+    private String email;
 
     /**
      * Default no-argument constructor.
@@ -22,7 +23,7 @@ public class Patient implements Serializable {
     }
 
     /**
-     * Constructor without patientId (useful for new patient registration).
+     * Constructor without patientId or email.
      */
     public Patient(String fullName, String address, String contactNumber) {
         this.fullName = fullName;
@@ -31,13 +32,34 @@ public class Patient implements Serializable {
     }
 
     /**
-     * Full parameterized constructor.
+     * Constructor without patientId with email.
+     */
+    public Patient(String fullName, String address, String contactNumber, String email) {
+        this.fullName = fullName;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.email = email;
+    }
+
+    /**
+     * Parameterized constructor without email.
      */
     public Patient(int patientId, String fullName, String address, String contactNumber) {
         this.patientId = patientId;
         this.fullName = fullName;
         this.address = address;
         this.contactNumber = contactNumber;
+    }
+
+    /**
+     * Full parameterized constructor including email.
+     */
+    public Patient(int patientId, String fullName, String address, String contactNumber, String email) {
+        this.patientId = patientId;
+        this.fullName = fullName;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.email = email;
     }
 
     public int getPatientId() {
@@ -72,6 +94,14 @@ public class Patient implements Serializable {
         this.contactNumber = contactNumber;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,12 +110,13 @@ public class Patient implements Serializable {
         return patientId == patient.patientId &&
                 Objects.equals(fullName, patient.fullName) &&
                 Objects.equals(address, patient.address) &&
-                Objects.equals(contactNumber, patient.contactNumber);
+                Objects.equals(contactNumber, patient.contactNumber) &&
+                Objects.equals(email, patient.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(patientId, fullName, address, contactNumber);
+        return Objects.hash(patientId, fullName, address, contactNumber, email);
     }
 
     @Override
@@ -95,6 +126,7 @@ public class Patient implements Serializable {
                 ", fullName='" + fullName + '\'' +
                 ", address='" + address + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }
