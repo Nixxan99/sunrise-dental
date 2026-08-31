@@ -10,47 +10,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        .login-bg {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .login-card {
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border: none;
-            overflow: hidden;
-        }
-        .clinic-brand-header {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-        }
-        .btn-primary-gradient {
-            background: linear-gradient(90deg, #0d6efd 0%, #0b5ed7 100%);
-            border: none;
+        .theme-toggle-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
         }
     </style>
 </head>
-<body>
-<div class="container">
+<body class="login-bg">
+
+<!-- Persistent Dark Mode Switcher -->
+<div class="theme-toggle-fixed">
+    <button id="theme-toggle-btn" class="theme-toggle-btn shadow" title="Toggle Theme" aria-label="Toggle Theme">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+</div>
+
+<div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-5">
-            <div class="card login-card bg-white">
-                <div class="clinic-brand-header p-4 text-center">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+            <div class="card clinic-card shadow-lg overflow-hidden border-0">
+                <div class="p-4 p-md-5 text-center bg-primary bg-opacity-10 border-bottom">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3 shadow-sm" style="width: 68px; height: 68px;">
                         <i class="bi bi-hospital fs-2"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-1">Sunrise Dental Clinic</h3>
+                    <h3 class="fw-bold text-primary mb-1">Sunrise Dental Clinic</h3>
                     <p class="text-muted small mb-0">Clinic Management & Billing System (CIS6003)</p>
                 </div>
 
                 <div class="card-body p-4 p-md-5">
-                    <h5 class="card-title text-center mb-4 fw-semibold text-secondary">
-                        <i class="bi bi-shield-lock me-2"></i>Staff Portal Login
+                    <h5 class="card-title text-center mb-4 fw-bold">
+                        <i class="bi bi-shield-lock text-primary me-2"></i>Staff Portal Login
                     </h5>
 
                     <!-- Error Alert -->
@@ -81,42 +81,42 @@
                     <% } %>
 
                     <form action="<%= request.getContextPath() %>/login" method="post">
-                        <div class="mb-3">
-                            <label for="username" class="form-label fw-medium text-dark">
-                                <i class="bi bi-person-fill me-1 text-primary"></i>Username
-                            </label>
+                        <div class="form-floating mb-3">
                             <input type="text"
-                                   class="form-control form-control-lg fs-6"
+                                   class="form-control"
                                    id="username"
                                    name="username"
-                                   placeholder="Enter staff username"
+                                   placeholder="Username"
                                    value="<%= request.getAttribute("enteredUsername") != null ? request.getAttribute("enteredUsername") : "" %>"
                                    required autofocus>
+                            <label for="username">
+                                <i class="bi bi-person me-1"></i>Username
+                            </label>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="password" class="form-label fw-medium text-dark">
-                                <i class="bi bi-key-fill me-1 text-primary"></i>Password
-                            </label>
+                        <div class="form-floating mb-4">
                             <input type="password"
-                                   class="form-control form-control-lg fs-6"
+                                   class="form-control"
                                    id="password"
                                    name="password"
-                                   placeholder="Enter password"
+                                   placeholder="Password"
                                    required>
+                            <label for="password">
+                                <i class="bi bi-key me-1"></i>Password
+                            </label>
                         </div>
 
                         <div class="d-grid gap-2 mb-3">
-                            <button type="submit" class="btn btn-primary btn-primary-gradient btn-lg fs-6 fw-semibold shadow-sm">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            <button type="submit" class="btn btn-primary-gradient btn-lg fs-6 fw-bold shadow-sm py-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Portal
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <div class="card-footer bg-light text-center py-3">
+                <div class="card-footer bg-body-tertiary text-center py-3 border-top">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i>Default accounts: <strong>admin / admin123</strong> or <strong>staff / staff123</strong>
+                        <i class="bi bi-info-circle me-1"></i>Default credentials: <strong>admin / admin123</strong> or <strong>staff / staff123</strong>
                     </small>
                 </div>
             </div>
@@ -125,5 +125,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>

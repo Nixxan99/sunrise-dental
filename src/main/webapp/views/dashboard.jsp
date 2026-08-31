@@ -28,37 +28,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .stat-card {
-            border: none;
-            border-radius: 0.75rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .table-card {
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-        }
-    </style>
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
 </head>
 <body>
 
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-clinic sticky-top">
     <div class="container-fluid px-4">
-        <a class="navbar-brand d-flex align-items-center" href="<%= request.getContextPath() %>/dashboard">
+        <a class="navbar-brand d-flex align-items-center fw-bold" href="<%= request.getContextPath() %>/dashboard">
             <i class="bi bi-hospital fs-3 me-2"></i>
             <span>Sunrise Dental Clinic</span>
         </a>
@@ -69,7 +47,7 @@
         <div class="collapse navbar-collapse" id="navContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
                 <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="<%= request.getContextPath() %>/dashboard">
+                    <a class="nav-link active fw-semibold" href="<%= request.getContextPath() %>/dashboard">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
                     </a>
                 </li>
@@ -112,12 +90,16 @@
                 </li>
             </ul>
 
-            <div class="d-flex align-items-center text-white">
-                <div class="me-3 text-end d-none d-md-block">
-                    <div class="fw-semibold"><%= staffName %></div>
+            <div class="d-flex align-items-center text-white gap-3">
+                <!-- Theme Switcher Button -->
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-semibold small"><%= staffName %></div>
                     <small class="badge bg-light text-primary"><%= role %></small>
                 </div>
-                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm">
+                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">
                     <i class="bi bi-box-arrow-right me-1"></i>Logout
                 </a>
             </div>
@@ -137,13 +119,13 @@
     <% } %>
 
     <!-- Page Header & Quick Actions -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2">
         <div>
-            <h2 class="fw-bold text-dark mb-1">Clinic Operations Dashboard</h2>
+            <h2 class="fw-bold mb-1">Clinic Operations Dashboard</h2>
             <p class="text-muted mb-0">Overview of patient appointments, dental consultations, and revenue</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
-            <a href="<%= request.getContextPath() %>/appointments?action=new" class="btn btn-primary shadow-sm">
+            <a href="<%= request.getContextPath() %>/appointments?action=new" class="btn btn-primary-gradient shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i>Book Appointment
             </a>
             <a href="<%= request.getContextPath() %>/reports" class="btn btn-outline-primary shadow-sm">
@@ -156,58 +138,58 @@
     </div>
 
     <!-- Metric Cards Row -->
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card shadow-sm bg-white p-3 border-start border-primary border-4">
+            <div class="card clinic-card clinic-card-hover p-4 border-start border-primary border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Total Appointments</div>
-                        <div class="fs-3 fw-bold text-dark"><%= totalAppts %></div>
+                        <div class="fs-2 fw-bold"><%= totalAppts %></div>
                     </div>
-                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
-                        <i class="bi bi-calendar-check fs-4"></i>
+                    <div class="badge-subtle-primary p-3 rounded-circle">
+                        <i class="bi bi-calendar-check fs-3"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card shadow-sm bg-white p-3 border-start border-warning border-4">
+            <div class="card clinic-card clinic-card-hover p-4 border-start border-warning border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Scheduled / Pending</div>
-                        <div class="fs-3 fw-bold text-warning"><%= scheduledCount %></div>
+                        <div class="fs-2 fw-bold text-warning"><%= scheduledCount %></div>
                     </div>
-                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
-                        <i class="bi bi-clock-history fs-4"></i>
+                    <div class="badge-subtle-warning p-3 rounded-circle">
+                        <i class="bi bi-clock-history fs-3"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card shadow-sm bg-white p-3 border-start border-success border-4">
+            <div class="card clinic-card clinic-card-hover p-4 border-start border-success border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Completed / Paid</div>
-                        <div class="fs-3 fw-bold text-success"><%= completedCount %></div>
+                        <div class="fs-2 fw-bold text-success"><%= completedCount %></div>
                     </div>
-                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
-                        <i class="bi bi-check2-circle fs-4"></i>
+                    <div class="badge-subtle-success p-3 rounded-circle">
+                        <i class="bi bi-check2-circle fs-3"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card shadow-sm bg-white p-3 border-start border-info border-4">
+            <div class="card clinic-card clinic-card-hover p-4 border-start border-info border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Total Revenue</div>
-                        <div class="fs-3 fw-bold text-info">$<%= String.format("%.2f", revenue) %></div>
+                        <div class="fs-2 fw-bold text-info">$<%= String.format("%.2f", revenue) %></div>
                     </div>
-                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle">
-                        <i class="bi bi-cash-stack fs-4"></i>
+                    <div class="badge-subtle-primary p-3 rounded-circle">
+                        <i class="bi bi-cash-stack fs-3 text-info"></i>
                     </div>
                 </div>
             </div>
@@ -215,17 +197,17 @@
     </div>
 
     <!-- Appointments Data Table Card -->
-    <div class="card table-card bg-white">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">
+    <div class="card clinic-card mb-4 overflow-hidden">
+        <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center px-4">
+            <h5 class="mb-0 fw-bold">
                 <i class="bi bi-list-task me-2 text-primary"></i>Recent Clinic Appointments
             </h5>
             <span class="badge bg-secondary"><%= appointments != null ? appointments.size() : 0 %> records</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle table-clinic mb-0">
+                    <thead>
                         <tr>
                             <th class="ps-4">Appt #</th>
                             <th>Patient Name</th>
@@ -246,7 +228,7 @@
                             <td class="ps-4 fw-bold text-primary">#<%= a.getAppointmentNumber() %></td>
                             <td class="fw-semibold"><%= a.getPatientName() != null ? a.getPatientName() : "Patient #" + a.getPatientId() %></td>
                             <td><i class="bi bi-person-badge text-muted me-1"></i><%= a.getDentistName() != null ? a.getDentistName() : "Doctor #" + a.getDentistId() %></td>
-                            <td><span class="badge bg-light text-dark border"><%= a.getTreatmentName() != null ? a.getTreatmentName() : "Treatment #" + a.getTreatmentId() %></span></td>
+                            <td><span class="badge bg-body-secondary text-body border"><%= a.getTreatmentName() != null ? a.getTreatmentName() : "Treatment #" + a.getTreatmentId() %></span></td>
                             <td><%= a.getAppointmentDate() %></td>
                             <td><%= a.getAppointmentTime() %></td>
                             <td class="fw-semibold">$<%= String.format("%.2f", a.getCost()) %></td>
@@ -277,7 +259,7 @@
                                 <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
                                 No appointments registered in the system yet.
                                 <div class="mt-2">
-                                    <a href="<%= request.getContextPath() %>/appointments?action=new" class="btn btn-primary btn-sm">
+                                    <a href="<%= request.getContextPath() %>/appointments?action=new" class="btn btn-primary-gradient btn-sm">
                                         <i class="bi bi-plus-circle me-1"></i>Register First Appointment
                                     </a>
                                 </div>
@@ -292,5 +274,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>

@@ -16,42 +16,44 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
     <style>
         body {
-            background: linear-gradient(135deg, #0d6efd 0%, #004085 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
         }
-        .reset-card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            width: 100%;
-            max-width: 480px;
-        }
-        .strength-bar {
-            height: 6px;
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        .theme-toggle-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
         }
     </style>
 </head>
-<body>
+<body class="login-wrapper">
+
+<!-- Fixed Floating Theme Toggle Button -->
+<div class="theme-toggle-floating">
+    <button id="theme-toggle-btn" class="theme-toggle-btn shadow" title="Toggle Theme" aria-label="Toggle Theme">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+</div>
 
 <div class="container p-3">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-5">
 
-            <div class="card reset-card bg-white p-4 p-md-5">
+            <div class="card clinic-card p-4 p-md-5">
 
                 <div class="text-center mb-4">
-                    <div class="bg-warning bg-opacity-10 text-warning d-inline-flex p-3 rounded-circle mb-3">
-                        <i class="bi bi-shield-lock-fill fs-1"></i>
+                    <div class="badge-subtle-warning d-inline-flex p-3 rounded-circle mb-3">
+                        <i class="bi bi-shield-lock-fill fs-1 text-warning"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-1">Set New Password</h3>
+                    <h3 class="fw-bold mb-1">Set New Password</h3>
                     <p class="text-muted small mb-0">
                         Hello, <strong><%= fullName %></strong> (<%= username %>). For security ethics and policy compliance, please create a new personal password before accessing the system.
                     </p>
@@ -67,31 +69,25 @@
 
                 <form action="<%= request.getContextPath() %>/reset-password" method="post" id="resetForm">
 
-                    <div class="mb-3">
-                        <label for="newPassword" class="form-label fw-semibold">New Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                            <input type="password" class="form-control" id="newPassword" name="newPassword"
-                                   placeholder="Minimum 6 characters" minlength="6" required autofocus>
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="newPassword" name="newPassword"
+                               placeholder="Minimum 6 characters" minlength="6" required autofocus>
+                        <label for="newPassword">New Password <span class="text-danger">*</span></label>
                         <div class="progress mt-2" style="height: 6px;">
                             <div id="strengthBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%;"></div>
                         </div>
                         <small id="strengthText" class="text-muted d-block mt-1">Password strength: Weak</small>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="confirmPassword" class="form-label fw-semibold">Confirm New Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-check2-circle"></i></span>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
-                                   placeholder="Re-type your password" minlength="6" required>
-                        </div>
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+                               placeholder="Re-type your password" minlength="6" required>
+                        <label for="confirmPassword">Confirm New Password <span class="text-danger">*</span></label>
                         <small id="matchFeedback" class="text-danger d-none mt-1">Passwords do not match.</small>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                        <button type="submit" class="btn btn-primary-gradient py-3 fw-semibold shadow-sm">
                             <i class="bi bi-shield-check me-1"></i>Save Password & Proceed
                         </button>
                         <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-secondary btn-sm">
@@ -148,5 +144,6 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>

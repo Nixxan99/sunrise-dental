@@ -7,6 +7,9 @@
 <%
     User currentUser = (User) session.getAttribute("user");
     String staffName = currentUser != null ? currentUser.getFullName() : "Staff";
+    String role = currentUser != null ? currentUser.getRole() : "STAFF";
+    boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
     List<Dentist> dentists = (List<Dentist>) request.getAttribute("dentists");
     List<Treatment> treatments = (List<Treatment>) request.getAttribute("treatments");
 
@@ -31,28 +34,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .form-card {
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-    </style>
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
 </head>
 <body>
 
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-clinic sticky-top">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center fw-bold" href="<%= request.getContextPath() %>/dashboard">
             <i class="bi bi-hospital fs-3 me-2"></i>
             <span>Sunrise Dental Clinic</span>
         </a>
-        <div class="collapse navbar-collapse">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/dashboard">
@@ -60,7 +58,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="<%= request.getContextPath() %>/appointments?action=new">
+                    <a class="nav-link active fw-semibold" href="<%= request.getContextPath() %>/appointments?action=new">
                         <i class="bi bi-calendar-plus me-1"></i>New Appointment
                     </a>
                 </li>
@@ -71,18 +69,34 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
-                        <i class="bi bi-graph-up me-1"></i>Reports
+                        <i class="bi bi-graph-up me-1"></i>Reports & Analytics
                     </a>
                 </li>
+                <% if (isAdmin) { %>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white-50" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-1"></i>Administration
+                    </a>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/users"><i class="bi bi-people me-2"></i>Manage Staff Accounts</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/dentists"><i class="bi bi-person-badge me-2"></i>Manage Dentists</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/treatments"><i class="bi bi-clipboard2-pulse me-2"></i>Manage Treatments</a></li>
+                    </ul>
+                </li>
+                <% } %>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">
                         <i class="bi bi-question-circle me-1"></i>Help
                     </a>
                 </li>
             </ul>
-            <div class="d-flex align-items-center text-white">
-                <span class="me-3 small text-white-50"><i class="bi bi-person-circle me-1"></i><%= staffName %></span>
-                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm">Logout</a>
+
+            <div class="d-flex align-items-center text-white gap-3">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+                <span class="small text-white-50"><i class="bi bi-person-circle me-1"></i><%= staffName %></span>
+                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">Logout</a>
             </div>
         </div>
     </div>
@@ -90,83 +104,90 @@
 
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-9">
 
-            <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-4">
                 <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
                 </a>
-                <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>All fields marked * are required</span>
+                <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Fields marked with <span class="text-danger">*</span> are mandatory</span>
             </div>
 
-            <div class="card form-card bg-white overflow-hidden">
-                <div class="card-header bg-primary text-white p-3 px-4">
-                    <h4 class="mb-0 fw-semibold">
-                        <i class="bi bi-calendar2-plus me-2"></i>Book Patient Appointment
-                    </h4>
+            <div class="card clinic-card p-4 p-md-5 mb-4">
+                <div class="d-flex align-items-center gap-3 pb-3 mb-4 border-bottom">
+                    <div class="badge-subtle-primary p-3 rounded-circle">
+                        <i class="bi bi-calendar2-plus fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">Book Patient Appointment</h3>
+                        <p class="text-muted small mb-0">Register appointment scheduling, patient demographics, and assigned clinical practitioner.</p>
+                    </div>
                 </div>
 
-                <div class="card-body p-4 p-md-5">
+                <!-- Error Alert -->
+                <% if (request.getAttribute("errorMessage") != null) { %>
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <%= request.getAttribute("errorMessage") %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% } %>
 
-                    <!-- Error Alert -->
-                    <% if (request.getAttribute("errorMessage") != null) { %>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <%= request.getAttribute("errorMessage") %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <% } %>
+                <form action="<%= request.getContextPath() %>/appointments" method="post" id="appointmentForm">
 
-                    <form action="<%= request.getContextPath() %>/appointments" method="post" id="appointmentForm">
+                    <!-- Section: Patient Demographics -->
+                    <h6 class="text-primary text-uppercase fw-bold mb-3">
+                        <i class="bi bi-person-badge me-1"></i>Patient Details
+                    </h6>
 
-                        <!-- Section: Patient Demographics -->
-                        <h6 class="text-primary text-uppercase fw-bold mb-3 border-bottom pb-2">
-                            <i class="bi bi-person-badge me-1"></i>Patient Details
-                        </h6>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-12 col-md-6">
-                                <label for="patientName" class="form-label fw-medium">Patient Full Name <span class="text-danger">*</span></label>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
                                 <input type="text" class="form-control" id="patientName" name="patientName"
-                                       placeholder="e.g. Kamal Perera"
+                                       placeholder="Patient Full Name"
                                        value="<%= patientName != null ? patientName : "" %>" required>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label for="contactNumber" class="form-label fw-medium">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="contactNumber" name="contactNumber"
-                                       placeholder="e.g. 0712345678 or +94771234567"
-                                       value="<%= contactNumber != null ? contactNumber : "" %>" required>
-                                <small class="text-muted">Format: Sri Lankan mobile (07XXXXXXXX or +947XXXXXXXX)</small>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label for="patientEmail" class="form-label fw-medium">Patient Email (Optional for Gmail Alert)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                    <input type="email" class="form-control" id="patientEmail" name="patientEmail"
-                                           placeholder="e.g. patient@example.com"
-                                           value="<%= patientEmail != null ? patientEmail : "" %>">
-                                </div>
-                                <small class="text-muted">Receives instant confirmation via Gmail SMTP</small>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label for="address" class="form-label fw-medium">Residential Address</label>
-                                <input type="text" class="form-control" id="address" name="address"
-                                       placeholder="e.g. 45 Galle Road, Colombo 03"
-                                       value="<%= address != null ? address : "" %>">
+                                <label for="patientName">Patient Full Name <span class="text-danger">*</span></label>
                             </div>
                         </div>
 
-                        <!-- Section: Clinical Consultation Details -->
-                        <h6 class="text-primary text-uppercase fw-bold mb-3 border-bottom pb-2">
-                            <i class="bi bi-heart-pulse me-1"></i>Consultation & Procedure
-                        </h6>
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="contactNumber" name="contactNumber"
+                                       placeholder="Contact Number"
+                                       value="<%= contactNumber != null ? contactNumber : "" %>" required>
+                                <label for="contactNumber">Contact Number <span class="text-danger">*</span></label>
+                            </div>
+                            <small class="text-muted ms-1">Format: 07XXXXXXXX or +947XXXXXXXX</small>
+                        </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-12 col-md-6">
-                                <label for="dentistId" class="form-label fw-medium">Select Dentist <span class="text-danger">*</span></label>
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="patientEmail" name="patientEmail"
+                                       placeholder="Patient Email"
+                                       value="<%= patientEmail != null ? patientEmail : "" %>">
+                                <label for="patientEmail">Patient Email (Optional for Gmail SMTP Alert)</label>
+                            </div>
+                            <small class="text-muted ms-1">Instant confirmation sent via Gmail SMTP</small>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="address" name="address"
+                                       placeholder="Residential Address"
+                                       value="<%= address != null ? address : "" %>">
+                                <label for="address">Residential Address</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Clinical Consultation Details -->
+                    <h6 class="text-primary text-uppercase fw-bold mb-3">
+                        <i class="bi bi-heart-pulse me-1"></i>Consultation & Procedure
+                    </h6>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
                                 <select class="form-select" id="dentistId" name="dentistId" required>
                                     <option value="">-- Choose Assigned Doctor --</option>
                                     <% if (dentists != null) {
@@ -179,10 +200,12 @@
                                     <%  }
                                     } %>
                                 </select>
+                                <label for="dentistId">Attending Dentist <span class="text-danger">*</span></label>
                             </div>
+                        </div>
 
-                            <div class="col-12 col-md-6">
-                                <label for="treatmentId" class="form-label fw-medium">Select Treatment Procedure <span class="text-danger">*</span></label>
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
                                 <select class="form-select" id="treatmentId" name="treatmentId" required>
                                     <option value="">-- Choose Dental Treatment --</option>
                                     <% if (treatments != null) {
@@ -195,45 +218,50 @@
                                     <%  }
                                     } %>
                                 </select>
+                                <label for="treatmentId">Dental Treatment Procedure <span class="text-danger">*</span></label>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Section: Schedule Details -->
-                        <h6 class="text-primary text-uppercase fw-bold mb-3 border-bottom pb-2">
-                            <i class="bi bi-clock me-1"></i>Appointment Schedule
-                        </h6>
+                    <!-- Section: Schedule Details -->
+                    <h6 class="text-primary text-uppercase fw-bold mb-3">
+                        <i class="bi bi-clock me-1"></i>Appointment Schedule
+                    </h6>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-12 col-md-6">
-                                <label for="appointmentDate" class="form-label fw-medium">Appointment Date <span class="text-danger">*</span></label>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
                                 <input type="date" class="form-control" id="appointmentDate" name="appointmentDate"
                                        min="<%= todayStr %>"
                                        value="<%= enteredDate != null ? enteredDate : todayStr %>" required>
-                                <small class="text-muted">Dates in the past are not permitted.</small>
+                                <label for="appointmentDate">Appointment Date <span class="text-danger">*</span></label>
                             </div>
+                        </div>
 
-                            <div class="col-12 col-md-6">
-                                <label for="appointmentTime" class="form-label fw-medium">Appointment Time <span class="text-danger">*</span></label>
+                        <div class="col-12 col-md-6">
+                            <div class="form-floating">
                                 <input type="time" class="form-control" id="appointmentTime" name="appointmentTime"
                                        value="<%= enteredTime != null ? enteredTime : "10:00" %>" required>
+                                <label for="appointmentTime">Appointment Time <span class="text-danger">*</span></label>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Form Submission -->
-                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                            <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-light px-4">Cancel</a>
-                            <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
-                                <i class="bi bi-check-circle me-1"></i>Confirm & Register Appointment
-                            </button>
-                        </div>
+                    <!-- Form Submission -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary-gradient px-4 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i>Confirm & Register Appointment
+                        </button>
+                    </div>
 
-                    </form>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>

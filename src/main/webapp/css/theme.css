@@ -1,0 +1,221 @@
+/**
+ * Sunrise Dental Clinic Management System
+ * Elevated Modern UI Design System & Dark Mode Palettes
+ */
+
+:root {
+    --clinic-primary: #0d6efd;
+    --clinic-primary-hover: #0b5ed7;
+    --clinic-primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+    --clinic-success-gradient: linear-gradient(135deg, #198754 0%, #20c997 100%);
+    --clinic-accent: #0dcaf0;
+    --clinic-bg: #f4f7fa;
+    --clinic-card-bg: #ffffff;
+    --clinic-text-main: #212529;
+    --clinic-text-muted: #6c757d;
+    --clinic-border: rgba(0, 0, 0, 0.08);
+    --clinic-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --clinic-card-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.10);
+    --clinic-table-hover: rgba(13, 110, 253, 0.04);
+}
+
+[data-bs-theme="dark"] {
+    --clinic-primary: #3b82f6;
+    --clinic-primary-hover: #60a5fa;
+    --clinic-primary-gradient: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+    --clinic-success-gradient: linear-gradient(135deg, #059669 0%, #34d399 100%);
+    --clinic-accent: #38bdf8;
+    --clinic-bg: #0f172a;
+    --clinic-card-bg: #1e293b;
+    --clinic-text-main: #f8fafc;
+    --clinic-text-muted: #94a3b8;
+    --clinic-border: rgba(255, 255, 255, 0.08);
+    --clinic-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --clinic-card-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.50);
+    --clinic-table-hover: rgba(59, 130, 246, 0.12);
+}
+
+body {
+    background-color: var(--clinic-bg);
+    color: var(--clinic-text-main);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+/* Elevated Clinic Cards */
+.clinic-card {
+    background-color: var(--clinic-card-bg);
+    border: 1px solid var(--clinic-border);
+    border-radius: 1rem;
+    box-shadow: var(--clinic-card-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.clinic-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--clinic-card-shadow-hover);
+}
+
+/* Modern Gradient Buttons */
+.btn-primary-gradient {
+    background: var(--clinic-primary-gradient);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.25s ease;
+}
+
+.btn-primary-gradient:hover {
+    background: var(--clinic-primary-gradient);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
+    color: #ffffff;
+}
+
+.btn-success-gradient {
+    background: var(--clinic-success-gradient);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-success-gradient:hover {
+    background: var(--clinic-success-gradient);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.35);
+    color: #ffffff;
+}
+
+/* Navbar Elevation */
+.navbar-clinic {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] .navbar-clinic {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-bottom: 1px solid var(--clinic-border);
+}
+
+/* Tables */
+.table-clinic {
+    color: var(--clinic-text-main);
+    border-color: var(--clinic-border);
+}
+
+.table-clinic th {
+    background-color: rgba(0, 0, 0, 0.02);
+    color: var(--clinic-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--clinic-border);
+}
+
+[data-bs-theme="dark"] .table-clinic th {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--clinic-text-muted);
+}
+
+.table-clinic tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table-clinic tbody tr:hover {
+    background-color: var(--clinic-table-hover);
+}
+
+/* Floating Input Controls */
+.form-floating > .form-control,
+.form-floating > .form-select {
+    border-radius: 0.65rem;
+    border: 1px solid var(--clinic-border);
+    background-color: var(--clinic-card-bg);
+    color: var(--clinic-text-main);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    border-color: var(--clinic-primary);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.2);
+}
+
+.form-floating > label {
+    color: var(--clinic-text-muted);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(15deg) scale(1.08);
+}
+
+/* Badge Enhancements */
+.badge-subtle-primary {
+    background-color: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+}
+
+[data-bs-theme="dark"] .badge-subtle-primary {
+    background-color: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+.badge-subtle-success {
+    background-color: rgba(25, 135, 84, 0.12);
+    color: #198754;
+}
+
+[data-bs-theme="dark"] .badge-subtle-success {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+}
+
+.badge-subtle-warning {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #997404;
+}
+
+[data-bs-theme="dark"] .badge-subtle-warning {
+    background-color: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+}
+
+/* Print Optimization */
+@media print {
+    .navbar-clinic,
+    #theme-toggle-btn,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    .clinic-card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+}

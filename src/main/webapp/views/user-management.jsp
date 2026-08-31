@@ -22,23 +22,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .user-card {
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            background-color: #fff;
-        }
-    </style>
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
 </head>
 <body>
 
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-clinic sticky-top">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center fw-bold" href="<%= request.getContextPath() %>/dashboard">
             <i class="bi bi-hospital fs-3 me-2"></i>
@@ -66,7 +56,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
-                        <i class="bi bi-graph-up me-1"></i>Reports
+                        <i class="bi bi-graph-up me-1"></i>Reports & Analytics
                     </a>
                 </li>
                 <li class="nav-item dropdown">
@@ -85,12 +75,15 @@
                     </a>
                 </li>
             </ul>
-            <div class="d-flex align-items-center text-white">
-                <div class="me-3 text-end d-none d-md-block">
-                    <div class="fw-semibold"><%= staffName %></div>
-                    <small class="badge bg-light text-primary"><%= role %></small>
+            <div class="d-flex align-items-center text-white gap-3">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-semibold small"><%= staffName %></div>
+                    <small class="badge bg-danger">ADMIN</small>
                 </div>
-                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm">Logout</a>
+                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">Logout</a>
             </div>
         </div>
     </div>
@@ -101,11 +94,11 @@
     <!-- Page Header & New User Action Button -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h2 class="fw-bold text-dark mb-1">Staff Account & Access Management</h2>
+            <h2 class="fw-bold mb-1">Staff Account & Access Management</h2>
             <p class="text-muted mb-0">Security ethics, role assignments, password compliance, and account provisioning</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
-            <button type="button" class="btn btn-primary shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newUserModal">
+            <button type="button" class="btn btn-primary-gradient shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newUserModal">
                 <i class="bi bi-person-plus-fill me-1"></i>Register New Staff Account
             </button>
             <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-outline-secondary">
@@ -156,17 +149,17 @@
     <% } %>
 
     <!-- Users Table Card -->
-    <div class="card user-card">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">
+    <div class="card clinic-card overflow-hidden">
+        <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center px-4">
+            <h5 class="mb-0 fw-bold">
                 <i class="bi bi-people me-2 text-primary"></i>Clinic Staff Directory
             </h5>
             <span class="badge bg-primary"><%= users != null ? users.size() : 0 %> Operators</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle table-clinic mb-0">
+                    <thead>
                         <tr>
                             <th class="ps-4">UID</th>
                             <th>Full Name</th>
@@ -181,8 +174,8 @@
                         for (User u : users) {
                     %>
                         <tr>
-                            <td class="ps-4 fw-bold text-secondary">#<%= u.getUserId() %></td>
-                            <td class="fw-semibold text-dark"><%= u.getFullName() %></td>
+                            <td class="ps-4 fw-bold text-muted">#<%= u.getUserId() %></td>
+                            <td class="fw-semibold"><%= u.getFullName() %></td>
                             <td><code><%= u.getUsername() %></code></td>
                             <td>
                                 <% if ("ADMIN".equalsIgnoreCase(u.getRole())) { %>
@@ -225,8 +218,8 @@
 
                         <!-- Reset Password Modal for this User -->
                         <div class="modal fade" id="resetModal<%= u.getUserId() %>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
                                     <form action="<%= request.getContextPath() %>/admin/users" method="post">
                                         <input type="hidden" name="action" value="reset">
                                         <input type="hidden" name="userId" value="<%= u.getUserId() %>">
@@ -234,17 +227,17 @@
                                             <h5 class="modal-title fw-bold">Reset Password for <%= u.getFullName() %></h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body p-4">
                                             <p class="text-muted small">
                                                 Assign a temporary password for <strong><%= u.getUsername() %></strong>. The user will be required to change it upon next login.
                                             </p>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold">Temporary Password</label>
-                                                <input type="text" class="form-control" name="tempPassword" value="StaffReset123!" required>
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="tempPassword<%= u.getUserId() %>" name="tempPassword" value="StaffReset123!" required>
+                                                <label for="tempPassword<%= u.getUserId() %>">Temporary Password</label>
                                             </div>
                                         </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                        <div class="modal-footer bg-body-tertiary">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                             <button type="submit" class="btn btn-warning fw-semibold">Confirm Reset</button>
                                         </div>
                                     </form>
@@ -254,8 +247,8 @@
 
                         <!-- Delete User Modal for this User -->
                         <div class="modal fade" id="deleteModal<%= u.getUserId() %>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
                                     <form action="<%= request.getContextPath() %>/admin/users" method="post">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="userId" value="<%= u.getUserId() %>">
@@ -263,11 +256,11 @@
                                             <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete User Account</h5>
                                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body p-4">
                                             Are you sure you want to permanently delete the staff account for <strong><%= u.getFullName() %> (<%= u.getUsername() %>)</strong>?
                                         </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                        <div class="modal-footer bg-body-tertiary">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                             <button type="submit" class="btn btn-danger fw-semibold">Delete Account</button>
                                         </div>
                                     </form>
@@ -300,34 +293,34 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="fullName" class="form-label fw-semibold">Staff Member Full Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="fullName" name="fullName" placeholder="e.g. Nayomi Silva" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Full Name" required>
+                        <label for="fullName">Staff Member Full Name <span class="text-danger">*</span></label>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label fw-semibold">Login Username <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="e.g. nayomi.silva" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                        <label for="username">Login Username <span class="text-danger">*</span></label>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="role" class="form-label fw-semibold">System Role <span class="text-danger">*</span></label>
+                    <div class="form-floating mb-3">
                         <select class="form-select" id="role" name="role" required>
                             <option value="STAFF" selected>STAFF (General Operator)</option>
                             <option value="RECEPTIONIST">RECEPTIONIST (Front Desk)</option>
                             <option value="ADMIN">ADMIN (System Administrator)</option>
                         </select>
+                        <label for="role">System Role <span class="text-danger">*</span></label>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label fw-semibold">Initial Temporary Password <span class="text-danger">*</span></label>
+                    <div class="form-floating mb-3">
                         <input type="password" class="form-control" id="password" name="password" value="Welcome123!" minlength="6" required>
-                        <small class="text-muted">The user will be required to change this password upon first login.</small>
+                        <label for="password">Initial Temporary Password <span class="text-danger">*</span></label>
                     </div>
+                    <small class="text-muted d-block">The user will be required to change this password upon first login.</small>
                 </div>
-                <div class="modal-footer bg-light">
+                <div class="modal-footer bg-body-tertiary">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-semibold">
+                    <button type="submit" class="btn btn-primary-gradient fw-semibold shadow-sm">
                         <i class="bi bi-check-circle me-1"></i>Create Staff Account
                     </button>
                 </div>
@@ -337,5 +330,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>

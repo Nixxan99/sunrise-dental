@@ -21,27 +21,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .treatment-card {
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            background-color: #fff;
-        }
-        .table th {
-            font-weight: 600;
-            background-color: #f8f9fa;
-        }
-    </style>
+    <!-- Elevated UI Design System -->
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/theme.css">
 </head>
 <body>
 
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-clinic sticky-top">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center fw-bold" href="<%= request.getContextPath() %>/dashboard">
             <i class="bi bi-hospital fs-3 me-2"></i>
@@ -69,7 +55,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
-                        <i class="bi bi-graph-up me-1"></i>Reports
+                        <i class="bi bi-graph-up me-1"></i>Reports & Analytics
                     </a>
                 </li>
                 <li class="nav-item dropdown">
@@ -88,9 +74,15 @@
                     </a>
                 </li>
             </ul>
-            <div class="d-flex align-items-center text-white">
-                <span class="me-3 small text-white-50"><i class="bi bi-person-circle me-1"></i><%= staffName %> (ADMIN)</span>
-                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            <div class="d-flex align-items-center text-white gap-3">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-semibold small"><%= staffName %></div>
+                    <small class="badge bg-danger">ADMIN</small>
+                </div>
+                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm fw-semibold">Logout</a>
             </div>
         </div>
     </div>
@@ -99,15 +91,15 @@
 <div class="container py-4">
 
     <!-- Page Header & Action Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h2 class="fw-bold text-dark mb-1">
+            <h2 class="fw-bold mb-1">
                 <i class="bi bi-clipboard2-pulse text-primary me-2"></i>Treatment Catalog & Pricing
             </h2>
-            <p class="text-muted small mb-0">Maintain clinic dental procedures, services, and baseline standard fees.</p>
+            <p class="text-muted mb-0">Maintain clinic dental procedures, services, and baseline standard fees.</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#addTreatmentModal">
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <button class="btn btn-primary-gradient fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#addTreatmentModal">
                 <i class="bi bi-plus-circle me-1"></i>Add New Treatment
             </button>
             <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-outline-secondary">
@@ -148,7 +140,7 @@
 
     <!-- Edit Treatment Inline Card (If Editing) -->
     <% if (editTreatment != null) { %>
-    <div class="card treatment-card border-primary border-2 p-4 mb-4">
+    <div class="card clinic-card border-primary border-2 p-4 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold text-primary mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Treatment (ID #<%= editTreatment.getTreatmentId() %>)</h5>
             <a href="<%= request.getContextPath() %>/admin/treatments" class="btn btn-outline-secondary btn-sm">Cancel Edit</a>
@@ -156,15 +148,19 @@
         <form action="<%= request.getContextPath() %>/admin/treatments" method="post" class="row g-3">
             <input type="hidden" name="treatmentId" value="<%= editTreatment.getTreatmentId() %>">
             <div class="col-md-7">
-                <label class="form-label fw-semibold small">Treatment Name / Procedure Description <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="treatmentName" value="<%= editTreatment.getTreatmentName() %>" required>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="editTreatmentName" name="treatmentName" value="<%= editTreatment.getTreatmentName() %>" required>
+                    <label for="editTreatmentName">Treatment Name / Procedure Description <span class="text-danger">*</span></label>
+                </div>
             </div>
             <div class="col-md-5">
-                <label class="form-label fw-semibold small">Standard Fee ($) <span class="text-danger">*</span></label>
-                <input type="number" step="0.01" min="0" class="form-control" name="standardFee" value="<%= editTreatment.getStandardFee() %>" required>
+                <div class="form-floating">
+                    <input type="number" step="0.01" min="0" class="form-control" id="editStandardFee" name="standardFee" value="<%= editTreatment.getStandardFee() %>" required>
+                    <label for="editStandardFee">Standard Fee ($) <span class="text-danger">*</span></label>
+                </div>
             </div>
             <div class="col-12 text-end mt-3">
-                <button type="submit" class="btn btn-primary fw-semibold shadow-sm">
+                <button type="submit" class="btn btn-primary-gradient fw-semibold shadow-sm">
                     <i class="bi bi-check2-circle me-1"></i>Save Changes
                 </button>
             </div>
@@ -173,33 +169,33 @@
     <% } %>
 
     <!-- Treatments Table Card -->
-    <div class="card treatment-card p-4">
+    <div class="card clinic-card p-4 overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle table-clinic mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">ID</th>
+                        <th class="ps-3" style="width: 100px;">ID</th>
                         <th>Treatment / Procedure Name</th>
                         <th class="text-end" style="width: 200px;">Standard Fee ($)</th>
-                        <th class="text-end" style="width: 180px;">Actions</th>
+                        <th class="text-end pe-3" style="width: 180px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (treatments != null && !treatments.isEmpty()) {
                         for (Treatment t : treatments) { %>
                             <tr>
-                                <td class="fw-bold text-muted">#<%= t.getTreatmentId() %></td>
+                                <td class="ps-3 fw-bold text-muted">#<%= t.getTreatmentId() %></td>
                                 <td>
-                                    <div class="fw-bold text-dark"><%= t.getTreatmentName() %></div>
+                                    <div class="fw-bold"><%= t.getTreatmentName() %></div>
                                 </td>
                                 <td class="text-end">
                                     <span class="fw-bold text-success fs-6">$<%= String.format("%.2f", t.getStandardFee()) %></span>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end pe-3">
                                     <a href="<%= request.getContextPath() %>/admin/treatments?action=edit&id=<%= t.getTreatmentId() %>" class="btn btn-outline-primary btn-sm me-1" title="Edit Treatment">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a href="<%= request.getContextPath() %>/admin/treatments?action=delete&id=<%= t.getTreatmentId() %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove <%= t.getTreatmentName() %>?');" title="Delete Treatment">
+                                    <a href="<%= request.getContextPath() %>/admin/treatments?action=delete&id=<%= t.getTreatmentId() %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove <%= t.getTreatmentName() %>?');\" title="Delete Treatment">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
@@ -231,18 +227,18 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Treatment / Procedure Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="treatmentName" placeholder="e.g. Tooth Scaling & Polishing" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="modalTreatmentName" name="treatmentName" placeholder="Treatment Name" required>
+                        <label for="modalTreatmentName">Treatment / Procedure Name <span class="text-danger">*</span></label>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Standard Fee ($) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0" class="form-control" name="standardFee" placeholder="e.g. 4500.00" required>
+                    <div class="form-floating mb-3">
+                        <input type="number" step="0.01" min="0" class="form-control" id="modalFee" name="standardFee" placeholder="Standard Fee" required>
+                        <label for="modalFee">Standard Fee ($) <span class="text-danger">*</span></label>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
+                <div class="modal-footer bg-body-tertiary">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-semibold shadow-sm">
+                    <button type="submit" class="btn btn-primary-gradient fw-semibold shadow-sm">
                         <i class="bi bi-plus-circle me-1"></i>Add Treatment
                     </button>
                 </div>
@@ -253,5 +249,6 @@
 
 <!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>
 </body>
 </html>
