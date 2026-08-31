@@ -1,5 +1,6 @@
 package com.sunrisedental.controller;
 
+import com.sunrisedental.model.User;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -17,8 +18,8 @@ import java.util.List;
 
 /**
  * Authentication and Session Security Filter.
- * Protects secured views, appointment management, and billing operations
- * ensuring only authenticated staff members can access them.
+ * Protects secured views, appointment management, reports, and billing operations
+ * ensuring only authenticated staff members can access them and enforcing password reset policies.
  */
 @WebFilter(filterName = "AuthFilter", urlPatterns = {"/*"})
 public class AuthFilter implements Filter {
@@ -59,13 +60,31 @@ public class AuthFilter implements Filter {
         HttpSession session = request.getSession(false);
         boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 
-        if (isPublic || isLoggedIn) {
-            // Add cache control headers for secured paths to prevent browsing history caching
-            if (isLoggedIn && !isStaticResource(path)) {
+        if (isLoggedIn) {
+            User currentUser = (User) session.getAttribute("user");
+
+            // Password Policy Enforcement: If must change password, restrict access to reset password and logout only
+            if (currentUser != null && currentUser.isMustChangePassword()) {
+                boolean isPasswordResetFlow = path.startsWith("/reset-password")
+                        || path.startsWith("/views/reset-password.jsp")
+                        || path.startsWith("/logout")
+                        || isStaticResource(path);
+
+                if (!isPasswordResetFlow) {
+                    response.sendRedirect(request.getContextPath() + "/reset-password");
+                    return;
+                }
+            }
+
+            // Add cache control headers for secured paths
+            if (!isStaticResource(path)) {
                 response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
                 response.setHeader("Pragma", "no-cache");
                 response.setDateHeader("Expires", 0);
             }
+
+            chain.doFilter(req, res);
+        } else if (isPublic) {
             chain.doFilter(req, res);
         } else {
             // Protected path and user is not authenticated -> redirect to login

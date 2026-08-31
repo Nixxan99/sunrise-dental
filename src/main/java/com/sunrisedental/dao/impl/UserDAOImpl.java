@@ -30,7 +30,7 @@ public class UserDAOImpl implements UserDAO {
             return null;
         }
 
-        String sql = "SELECT user_id, username, password_hash, full_name, role FROM users WHERE username = ?";
+        String sql = "SELECT user_id, username, password_hash, full_name, role, must_change_password FROM users WHERE username = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -51,14 +51,20 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public boolean createUser(User user) {
-        String sql = "INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, password_hash, full_name, role, must_change_password) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            String passHash = user.getPasswordHash();
+            if (passHash != null && !passHash.matches("^[a-fA-F0-9]{64}$")) {
+                passHash = hashPassword(passHash);
+            }
+
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPasswordHash());
+            ps.setString(2, passHash);
             ps.setString(3, user.getFullName());
             ps.setString(4, user.getRole());
+            ps.setBoolean(5, user.isMustChangePassword());
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
@@ -76,8 +82,45 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean updatePassword(int userId, String newPassword, boolean mustChangePassword) {
+        String sql = "UPDATE users SET password_hash = ?, must_change_password = ? WHERE user_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            String hashedPassword = hashPassword(newPassword);
+            ps.setString(1, hashedPassword);
+            ps.setBoolean(2, mustChangePassword);
+            ps.setInt(3, userId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error updating user password for userId: " + userId, e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean resetPassword(int userId, String temporaryPassword) {
+        return updatePassword(userId, temporaryPassword, true);
+    }
+
+    @Override
+    public boolean deleteUser(int userId) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error deleting user: " + userId, e);
+        }
+        return false;
+    }
+
+    @Override
     public User getUserByUsername(String username) {
-        String sql = "SELECT user_id, username, password_hash, full_name, role FROM users WHERE username = ?";
+        String sql = "SELECT user_id, username, password_hash, full_name, role, must_change_password FROM users WHERE username = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -95,7 +138,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User getUserById(int userId) {
-        String sql = "SELECT user_id, username, password_hash, full_name, role FROM users WHERE user_id = ?";
+        String sql = "SELECT user_id, username, password_hash, full_name, role, must_change_password FROM users WHERE user_id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -114,7 +157,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT user_id, username, password_hash, full_name, role FROM users ORDER BY full_name";
+        String sql = "SELECT user_id, username, password_hash, full_name, role, must_change_password FROM users ORDER BY full_name";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -135,6 +178,7 @@ public class UserDAOImpl implements UserDAO {
         user.setPasswordHash(rs.getString("password_hash"));
         user.setFullName(rs.getString("full_name"));
         user.setRole(rs.getString("role"));
+        user.setMustChangePassword(rs.getBoolean("must_change_password"));
         return user;
     }
 

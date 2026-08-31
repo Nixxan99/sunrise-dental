@@ -12,7 +12,9 @@ import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Dentist;
 import com.sunrisedental.model.Patient;
 import com.sunrisedental.model.Treatment;
+import com.sunrisedental.service.GmailNotificationService;
 import com.sunrisedental.service.NotificationService;
+import com.sunrisedental.service.SmsNotificationService;
 import com.sunrisedental.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -48,7 +50,7 @@ public class AppointmentServlet extends HttpServlet {
         this.dentistDAO = new DentistDAOImpl();
         this.treatmentDAO = new TreatmentDAOImpl();
         this.patientDAO = new PatientDAOImpl();
-        this.notificationService = new NotificationService();
+        this.notificationService = new SmsNotificationService();
     }
 
     // Setters for unit testing and DI
@@ -172,10 +174,10 @@ public class AppointmentServlet extends HttpServlet {
 
             boolean success = appointmentDAO.registerAppointment(appt);
             if (success) {
-                // Trigger notification observers (SMS & Email alerts)
+                // Trigger notification service strategy & record in audit log
                 Appointment populatedAppt = appointmentDAO.getAppointmentByNumber(appt.getAppointmentNumber());
                 if (populatedAppt != null) {
-                    notificationService.notifyAppointmentBooked(populatedAppt, patient.getContactNumber());
+                    notificationService.sendAppointmentAlert(populatedAppt);
                 }
 
                 response.sendRedirect(request.getContextPath()
@@ -213,7 +215,7 @@ public class AppointmentServlet extends HttpServlet {
                 String contact = (patient != null) ? patient.getContactNumber() : "Registered Mobile";
                 request.setAttribute("patientContact", contact);
 
-                String smsPreview = notificationService.formatSmsNotification(appt);
+                String smsPreview = notificationService.formatAppointmentAlert(appt);
                 request.setAttribute("smsPreview", smsPreview);
             } else {
                 request.setAttribute("searchError", "No appointment found with number: " + apptNumberStr.trim());

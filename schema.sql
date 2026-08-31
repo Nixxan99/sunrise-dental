@@ -11,6 +11,7 @@ CREATE DATABASE IF NOT EXISTS sunrise_dental_db
 USE sunrise_dental_db;
 
 -- 2. Drop existing tables in reverse dependency order (safe reset)
+DROP TABLE IF EXISTS notification_logs;
 DROP TABLE IF EXISTS bills;
 DROP TABLE IF EXISTS appointments;
 DROP TABLE IF EXISTS patients;
@@ -19,7 +20,7 @@ DROP TABLE IF EXISTS dentists;
 DROP TABLE IF EXISTS users;
 
 -- ============================================================================
--- Table: users (Staff & Administrators)
+-- Table: users (Staff & Administrators with Password Security)
 -- ============================================================================
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,7 +28,20 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     role VARCHAR(30) NOT NULL DEFAULT 'STAFF',
+    must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============================================================================
+-- Table: notification_logs (Audit Trail for Patient Alerts)
+-- ============================================================================
+CREATE TABLE notification_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_phone VARCHAR(50) NOT NULL,
+    message_body TEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'SENT',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_notification_recipient (recipient_phone)
 ) ENGINE=InnoDB;
 
 -- ============================================================================
@@ -110,13 +124,13 @@ CREATE TABLE bills (
 -- ============================================================================
 
 -- 1. Seed Users (passwords hashed with SHA-256 matching UserDAOImpl)
---    admin / admin123
---    receptionist / reception123
---    staff / staff123
-INSERT INTO users (username, password_hash, full_name, role) VALUES
-('admin', SHA2('admin123', 256), 'System Administrator', 'ADMIN'),
-('receptionist', SHA2('reception123', 256), 'Senior Receptionist', 'RECEPTIONIST'),
-('staff', SHA2('staff123', 256), 'Clinic Staff Member', 'STAFF');
+--    admin / admin123 (must_change_password = FALSE)
+--    receptionist / reception123 (must_change_password = FALSE)
+--    staff / staff123 (must_change_password = TRUE for testing first login reset)
+INSERT INTO users (username, password_hash, full_name, role, must_change_password) VALUES
+('admin', SHA2('admin123', 256), 'System Administrator', 'ADMIN', FALSE),
+('receptionist', SHA2('reception123', 256), 'Senior Receptionist', 'RECEPTIONIST', FALSE),
+('staff', SHA2('staff123', 256), 'Clinic Staff Member', 'STAFF', TRUE);
 
 -- 2. Seed Dentists
 INSERT INTO dentists (name, specialization, contact_number) VALUES

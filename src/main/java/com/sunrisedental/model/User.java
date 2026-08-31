@@ -15,6 +15,7 @@ public class User implements Serializable {
     private String passwordHash;
     private String fullName;
     private String role;
+    private boolean mustChangePassword = false;
 
     /**
      * Default no-argument constructor.
@@ -30,6 +31,18 @@ public class User implements Serializable {
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.role = role;
+        this.mustChangePassword = false;
+    }
+
+    /**
+     * Parameterized constructor including mustChangePassword flag.
+     */
+    public User(String username, String passwordHash, String fullName, String role, boolean mustChangePassword) {
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.fullName = fullName;
+        this.role = role;
+        this.mustChangePassword = mustChangePassword;
     }
 
     /**
@@ -41,6 +54,16 @@ public class User implements Serializable {
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.role = role;
+        this.mustChangePassword = false;
+    }
+
+    public User(int userId, String username, String passwordHash, String fullName, String role, boolean mustChangePassword) {
+        this.userId = userId;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.fullName = fullName;
+        this.role = role;
+        this.mustChangePassword = mustChangePassword;
     }
 
     public int getUserId() {
@@ -83,12 +106,21 @@ public class User implements Serializable {
         this.role = role;
     }
 
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
         return userId == user.userId &&
+                mustChangePassword == user.mustChangePassword &&
                 Objects.equals(username, user.username) &&
                 Objects.equals(fullName, user.fullName) &&
                 Objects.equals(role, user.role);
@@ -96,7 +128,7 @@ public class User implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, username, fullName, role);
+        return Objects.hash(userId, username, fullName, role, mustChangePassword);
     }
 
     @Override
@@ -106,6 +138,7 @@ public class User implements Serializable {
                 ", username='" + username + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", role='" + role + '\'' +
+                ", mustChangePassword=" + mustChangePassword +
                 '}';
     }
 }

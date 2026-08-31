@@ -6,6 +6,7 @@
     User currentUser = (User) session.getAttribute("user");
     String staffName = currentUser != null ? currentUser.getFullName() : "Staff Member";
     String role = currentUser != null ? currentUser.getRole() : "STAFF";
+    boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
 
     List<Appointment> appointments = (List<Appointment>) request.getAttribute("appointments");
     int totalAppts = request.getAttribute("totalAppointments") != null ? (Integer) request.getAttribute("totalAppointments") : 0;
@@ -15,6 +16,7 @@
     double revenue = request.getAttribute("totalRevenue") != null ? (Double) request.getAttribute("totalRevenue") : 0.0;
     int dentistsCount = request.getAttribute("totalDentists") != null ? (Integer) request.getAttribute("totalDentists") : 0;
     int treatmentsCount = request.getAttribute("totalTreatments") != null ? (Integer) request.getAttribute("totalTreatments") : 0;
+    String message = request.getParameter("message");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,6 +88,13 @@
                         <i class="bi bi-graph-up me-1"></i>Reports & Analytics
                     </a>
                 </li>
+                <% if (isAdmin) { %>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/admin/users">
+                        <i class="bi bi-people-fill me-1"></i>User Management
+                    </a>
+                </li>
+                <% } %>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">
                         <i class="bi bi-question-circle me-1"></i>Help
@@ -113,6 +122,14 @@
 
 <!-- Main Container -->
 <div class="container-fluid px-4 py-4">
+
+    <% if ("password_changed".equals(message)) { %>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-shield-check me-2"></i>
+            <strong>Password Updated:</strong> Your security credentials have been updated successfully.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
 
     <!-- Page Header & Quick Actions -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">

@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
- * Controller handling user authentication and login lifecycle.
+ * Controller handling user authentication, login lifecycle, and password change interception.
  */
 @WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
@@ -35,6 +35,11 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser.isMustChangePassword()) {
+                response.sendRedirect(request.getContextPath() + "/reset-password");
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
@@ -64,10 +69,15 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("fullName", authenticatedUser.getFullName());
             session.setAttribute("role", authenticatedUser.getRole());
 
-            // Set session timeout (e.g. 30 minutes)
+            // Set session timeout (30 minutes)
             session.setMaxInactiveInterval(30 * 60);
 
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            // Password Security Interception: First login password change
+            if (authenticatedUser.isMustChangePassword()) {
+                response.sendRedirect(request.getContextPath() + "/reset-password");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/dashboard");
+            }
         } else {
             request.setAttribute("errorMessage", "Invalid credentials. Please check your username and password.");
             request.setAttribute("enteredUsername", username.trim());
