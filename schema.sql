@@ -11,6 +11,7 @@ CREATE DATABASE IF NOT EXISTS sunrise_dental_db
 USE sunrise_dental_db;
 
 -- 2. Drop existing tables in reverse dependency order (safe reset)
+DROP TABLE IF EXISTS appointment_audit_log;
 DROP TABLE IF EXISTS notification_logs;
 DROP TABLE IF EXISTS bills;
 DROP TABLE IF EXISTS appointments;
@@ -42,6 +43,20 @@ CREATE TABLE notification_logs (
     status VARCHAR(30) NOT NULL DEFAULT 'SENT',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_notification_recipient (recipient_phone)
+) ENGINE=InnoDB;
+
+-- ============================================================================
+-- Table: appointment_audit_log (Cloud-native Application-tier Audit Trail)
+-- Note: Replaces database triggers for distributed TiDB compatibility
+-- ============================================================================
+CREATE TABLE appointment_audit_log (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_number INT NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    performed_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM',
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_audit_appt (appointment_number)
 ) ENGINE=InnoDB;
 
 -- ============================================================================
@@ -124,9 +139,6 @@ CREATE TABLE bills (
 -- ============================================================================
 
 -- 1. Seed Users (passwords hashed with SHA-256 matching UserDAOImpl)
---    admin / admin123 (must_change_password = FALSE)
---    receptionist / reception123 (must_change_password = FALSE)
---    staff / staff123 (must_change_password = TRUE for testing first login reset)
 INSERT INTO users (username, password_hash, full_name, role, must_change_password) VALUES
 ('admin', SHA2('admin123', 256), 'System Administrator', 'ADMIN', FALSE),
 ('receptionist', SHA2('reception123', 256), 'Senior Receptionist', 'RECEPTIONIST', FALSE),

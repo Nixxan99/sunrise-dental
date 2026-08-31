@@ -46,11 +46,20 @@ class DBConnectionTest {
                         + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                         + ")");
 
-                // Ensure must_change_password column exists in users table (if table exists)
+                // Ensure appointment_audit_log table exists (Application-tier Observer audit)
+                stmt.executeUpdate("CREATE TABLE IF NOT EXISTS appointment_audit_log ("
+                        + "audit_id INT AUTO_INCREMENT PRIMARY KEY, "
+                        + "appointment_number INT NOT NULL, "
+                        + "action_type VARCHAR(50) NOT NULL, "
+                        + "performed_by VARCHAR(50) NOT NULL DEFAULT 'SYSTEM', "
+                        + "details TEXT, "
+                        + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                        + ")");
+
+                // Ensure must_change_password column exists in users table
                 try {
                     stmt.executeUpdate("ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT TRUE");
                 } catch (SQLException ignored) {
-                    // Column already exists or table not yet created
                 }
 
                 try (ResultSet rs = stmt.executeQuery("SELECT 1 AS test_val, VERSION() AS tidb_ver")) {

@@ -2,6 +2,8 @@ package com.sunrisedental.dao.impl;
 
 import com.sunrisedental.dao.AppointmentDAO;
 import com.sunrisedental.model.Appointment;
+import com.sunrisedental.service.AuditService;
+import com.sunrisedental.service.observer.AppointmentRegistrationListener;
 import com.sunrisedental.util.DBConnection;
 
 import java.sql.Connection;
@@ -13,17 +15,39 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Data Access Object implementation for Appointment operations.
- * Uses PreparedStatement to prevent SQL injection and joins patient, dentist,
- * and treatment data for presentation.
+ * Uses PreparedStatement to prevent SQL injection, joins related entities for presentation,
+ * and notifies registered application-tier Observers (such as AuditService) upon state changes.
  */
 public class AppointmentDAOImpl implements AppointmentDAO {
 
     private static final Logger LOGGER = Logger.getLogger(AppointmentDAOImpl.class.getName());
+
+    // Observer Pattern: Application-tier event listeners replacing native database triggers
+    private static final List<AppointmentRegistrationListener> REGISTRATION_LISTENERS =
+            new CopyOnWriteArrayList<>();
+
+    static {
+        // Register default application AuditService as an Observer
+        REGISTRATION_LISTENERS.add(new AuditService());
+    }
+
+    public static void addRegistrationListener(AppointmentRegistrationListener listener) {
+        if (listener != null) {
+            REGISTRATION_LISTENERS.add(listener);
+        }
+    }
+
+    public static void removeRegistrationListener(AppointmentRegistrationListener listener) {
+        if (listener != null) {
+            REGISTRATION_LISTENERS.remove(listener);
+        }
+    }
 
     private static final String SELECT_JOINED_APPOINTMENT =
             "SELECT a.appointment_number, a.patient_id, a.dentist_id, a.treatment_id, " +
@@ -74,6 +98,10 @@ public class AppointmentDAOImpl implements AppointmentDAO {
                         appt.setAppointmentNumber(generatedKeys.getInt(1));
                     }
                 }
+
+                // Notify Observers (e.g. AuditService) in the application tier
+                notifyRegistrationListeners(appt, "SYSTEM");
+
                 return true;
             }
         } catch (SQLException e) {
@@ -82,13 +110,22 @@ public class AppointmentDAOImpl implements AppointmentDAO {
         return false;
     }
 
+    private void notifyRegistrationListeners(Appointment appt, String performedBy) {
+        for (AppointmentRegistrationListener listener : REGISTRATION_LISTENERS) {
+            try {
+                listener.onAppointmentRegistered(appt, performedBy);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error notifying AppointmentRegistrationListener: " + e.getMessage(), e);
+            }
+        }
+    }
+
     @Override
     public Appointment getAppointmentByNumber(String apptNumber) {
         if (apptNumber == null || apptNumber.trim().isEmpty()) {
             return null;
         }
         try {
-            // Handle numeric appointment number or alphanumeric prefix if any
             int number = Integer.parseInt(apptNumber.replaceAll("\\D", ""));
             return getAppointmentByNumber(number);
         } catch (NumberFormatException e) {
