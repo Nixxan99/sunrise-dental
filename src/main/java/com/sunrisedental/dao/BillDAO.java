@@ -46,4 +46,14 @@ public interface BillDAO {
      * @return list of bills
      */
     List<Bill> getAllBills();
+
+    /**
+     * Demonstrates advanced database features by executing a stored procedure
+     * ({CALL sp_CalculatePatientBill(?, ?, ?, ?)}) via JDBC CallableStatement.
+     *
+     * @param appointmentNumber unique appointment number
+     * @param consultationFee doctor's consultation fee
+     * @return calculated Bill entity
+     */
+    Bill calculateBillViaProcedure(String appointmentNumber, double consultationFee);
 }

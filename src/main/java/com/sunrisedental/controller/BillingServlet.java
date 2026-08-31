@@ -7,6 +7,7 @@ import com.sunrisedental.dao.impl.BillDAOImpl;
 import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Bill;
 import com.sunrisedental.service.BillingService;
+import com.sunrisedental.service.GeminiCarePlanService;
 import com.sunrisedental.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,7 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller handling dental invoice generation, fee calculation, and receipt rendering.
+ * Controller handling dental invoice generation, fee calculation, stored procedure billing,
+ * receipt rendering, and Google Gemini AI personalized post-care plan generation.
  */
 @WebServlet(name = "BillingServlet", urlPatterns = {"/billing"})
 public class BillingServlet extends HttpServlet {
@@ -29,12 +31,14 @@ public class BillingServlet extends HttpServlet {
     private AppointmentDAO appointmentDAO;
     private BillDAO billDAO;
     private BillingService billingService;
+    private GeminiCarePlanService geminiCarePlanService;
 
     @Override
     public void init() {
         this.appointmentDAO = new AppointmentDAOImpl();
         this.billDAO = new BillDAOImpl();
         this.billingService = new BillingService();
+        this.geminiCarePlanService = new GeminiCarePlanService();
     }
 
     // Setters for unit testing and DI
@@ -48,6 +52,10 @@ public class BillingServlet extends HttpServlet {
 
     public void setBillingService(BillingService billingService) {
         this.billingService = billingService;
+    }
+
+    public void setGeminiCarePlanService(GeminiCarePlanService geminiCarePlanService) {
+        this.geminiCarePlanService = geminiCarePlanService;
     }
 
     @Override
@@ -69,6 +77,13 @@ public class BillingServlet extends HttpServlet {
                 request.getRequestDispatcher("/views/appointment-view.jsp").forward(request, response);
                 return;
             }
+
+            // Fetch Gemini AI Personalized Care Plan
+            String geminiAdvice = geminiCarePlanService.generatePostTreatmentAdvice(
+                    appointment.getTreatmentName(),
+                    appointment.getPatientName()
+            );
+            request.setAttribute("geminiAdvice", geminiAdvice);
 
             Bill bill = billDAO.getBillByAppointment(apptNumber);
             if (bill != null) {
@@ -147,6 +162,13 @@ public class BillingServlet extends HttpServlet {
                 appointment.setStatus("COMPLETED");
             }
 
+            // Fetch Gemini AI Personalized Care Plan
+            String geminiAdvice = geminiCarePlanService.generatePostTreatmentAdvice(
+                    appointment.getTreatmentName(),
+                    appointment.getPatientName()
+            );
+            request.setAttribute("geminiAdvice", geminiAdvice);
+
             String receiptText = billingService.generateReceipt(bill, appointment);
             request.setAttribute("bill", bill);
             request.setAttribute("appointment", appointment);
@@ -176,6 +198,12 @@ public class BillingServlet extends HttpServlet {
         draftBill.setTreatmentCost(treatmentCost);
         draftBill.setTotalAmount(consultationFee + treatmentCost);
         draftBill.setPaymentStatus(paymentStatus);
+
+        String geminiAdvice = geminiCarePlanService.generatePostTreatmentAdvice(
+                appointment != null ? appointment.getTreatmentName() : "Dental Care",
+                appointment != null ? appointment.getPatientName() : "Patient"
+        );
+        request.setAttribute("geminiAdvice", geminiAdvice);
 
         request.setAttribute("bill", draftBill);
         request.setAttribute("appointment", appointment);

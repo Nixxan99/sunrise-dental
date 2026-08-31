@@ -11,6 +11,7 @@
     Appointment appt = (Appointment) request.getAttribute("appointment");
     Boolean isDraft = (Boolean) request.getAttribute("isDraft");
     String receiptText = (String) request.getAttribute("receiptText");
+    String geminiAdvice = (String) request.getAttribute("geminiAdvice");
     String successMessage = (String) request.getAttribute("successMessage");
     String errorMessage = (String) request.getAttribute("errorMessage");
 
@@ -172,7 +173,7 @@
                     </div>
                     <div class="col-sm-5 text-sm-end mt-3 mt-sm-0">
                         <h4 class="text-uppercase fw-bold text-primary mb-1">
-                            <%= (isDraft != null && isDraft) ? "Billing Draft" : "Tax Invoice" %>
+                            <%= (isDraft != null && isDraft) ? \"Billing Draft\" : \"Tax Invoice\" %>
                         </h4>
                         <div class="fw-semibold text-secondary">Inv #: INV-<%= apptNo %></div>
                         <div class="text-muted small">Date: <%= issuedAt %></div>
@@ -274,6 +275,24 @@
                 <div class="mb-4">
                     <h6 class="text-muted text-uppercase fw-bold small mb-2"><i class="bi bi-receipt me-1"></i>Thermal Printer Text Receipt</h6>
                     <div class="receipt-preview"><%= receiptText %></div>
+                </div>
+                <% } %>
+
+                <!-- AI-Assisted Personalized Post-Care Plan Section (Google Gemini AI) -->
+                <% if (geminiAdvice != null && !geminiAdvice.trim().isEmpty()) { %>
+                <div class="mt-4 mb-4 p-4 rounded-3 border border-primary border-opacity-25 bg-light shadow-sm">
+                    <div class="d-flex align-items-center mb-2 text-primary">
+                        <i class="bi bi-stars fs-4 me-2"></i>
+                        <h6 class="fw-bold mb-0 text-uppercase">
+                            *** Personalized Post-Care Instructions (AI Assisted) ***
+                        </h6>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Tailored recovery guidance generated for <%= (appt != null && appt.getPatientName() != null) ? appt.getPatientName() : "Patient" %> following <%= (appt != null && appt.getTreatmentName() != null) ? appt.getTreatmentName() : "Dental Care" %>:
+                    </p>
+                    <div class="p-3 bg-white rounded border border-secondary-subtle">
+                        <pre class="mb-0 text-dark" style="white-space: pre-wrap; font-family: inherit; font-size: 0.95rem; line-height: 1.6;"><%= geminiAdvice %></pre>
+                    </div>
                 </div>
                 <% } %>
 

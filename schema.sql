@@ -135,6 +135,50 @@ CREATE TABLE bills (
 ) ENGINE=InnoDB;
 
 -- ============================================================================
+-- ADVANCED DATABASE FEATURES (For MySQL Environments)
+-- ============================================================================
+
+-- Stored Procedure: Calculate Patient Bill & Invoice Figures
+DROP PROCEDURE IF EXISTS sp_CalculatePatientBill;
+DELIMITER //
+CREATE PROCEDURE sp_CalculatePatientBill(
+    IN p_appointment_number INT,
+    IN p_consultation_fee DECIMAL(10, 2),
+    OUT p_treatment_cost DECIMAL(10, 2),
+    OUT p_total_amount DECIMAL(10, 2)
+)
+BEGIN
+    SELECT COALESCE(t.standard_fee, 0.00) INTO p_treatment_cost
+    FROM appointments a
+    JOIN treatments t ON a.treatment_id = t.treatment_id
+    WHERE a.appointment_number = p_appointment_number;
+
+    IF p_treatment_cost IS NULL THEN
+        SET p_treatment_cost = 0.00;
+    END IF;
+
+    SET p_total_amount = p_treatment_cost + p_consultation_fee;
+END //
+DELIMITER ;
+
+-- Trigger: Audit Log Trigger for Appointment Registration (Demonstration for MySQL)
+DROP TRIGGER IF EXISTS trg_after_appointment_insert;
+DELIMITER //
+CREATE TRIGGER trg_after_appointment_insert
+AFTER INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    INSERT INTO appointment_audit_log (appointment_number, action_type, performed_by, details)
+    VALUES (
+        NEW.appointment_number,
+        'APPOINTMENT_REGISTERED',
+        'DB_TRIGGER',
+        CONCAT('Patient ID: ', NEW.patient_id, ', Dentist ID: ', NEW.dentist_id, ', Treatment ID: ', NEW.treatment_id)
+    );
+END //
+DELIMITER ;
+
+-- ============================================================================
 -- SEED DATA
 -- ============================================================================
 
