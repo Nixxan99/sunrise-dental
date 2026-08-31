@@ -13,6 +13,7 @@
     String patientName = (String) request.getAttribute("enteredPatientName");
     String address = (String) request.getAttribute("enteredAddress");
     String contactNumber = (String) request.getAttribute("enteredContactNumber");
+    String patientEmail = (String) request.getAttribute("enteredPatientEmail");
     String enteredDentistId = (String) request.getAttribute("enteredDentistId");
     String enteredTreatmentId = (String) request.getAttribute("enteredTreatmentId");
     String enteredDate = (String) request.getAttribute("enteredDate");
@@ -139,7 +140,18 @@
                                 <small class="text-muted">Format: Sri Lankan mobile (07XXXXXXXX or +947XXXXXXXX)</small>
                             </div>
 
-                            <div class="col-12">
+                            <div class="col-12 col-md-6">
+                                <label for="patientEmail" class="form-label fw-medium">Patient Email (Optional for Gmail Alert)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" id="patientEmail" name="patientEmail"
+                                           placeholder="e.g. patient@example.com"
+                                           value="<%= patientEmail != null ? patientEmail : "" %>">
+                                </div>
+                                <small class="text-muted">Receives instant confirmation via Gmail SMTP</small>
+                            </div>
+
+                            <div class="col-12 col-md-6">
                                 <label for="address" class="form-label fw-medium">Residential Address</label>
                                 <input type="text" class="form-control" id="address" name="address"
                                        placeholder="e.g. 45 Galle Road, Colombo 03"

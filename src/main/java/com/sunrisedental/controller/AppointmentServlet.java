@@ -12,6 +12,7 @@ import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Dentist;
 import com.sunrisedental.model.Patient;
 import com.sunrisedental.model.Treatment;
+import com.sunrisedental.service.EmailNotificationService;
 import com.sunrisedental.service.GmailNotificationService;
 import com.sunrisedental.service.NotificationService;
 import com.sunrisedental.service.SmsNotificationService;
@@ -31,7 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller handling appointment registration, search, and notification dispatching.
+ * Controller handling appointment registration, search, and asynchronous notification dispatching.
  */
 @WebServlet(name = "AppointmentServlet", urlPatterns = {"/appointments"})
 public class AppointmentServlet extends HttpServlet {
@@ -43,6 +44,7 @@ public class AppointmentServlet extends HttpServlet {
     private TreatmentDAO treatmentDAO;
     private PatientDAO patientDAO;
     private NotificationService notificationService;
+    private EmailNotificationService emailNotificationService;
 
     @Override
     public void init() {
@@ -51,6 +53,7 @@ public class AppointmentServlet extends HttpServlet {
         this.treatmentDAO = new TreatmentDAOImpl();
         this.patientDAO = new PatientDAOImpl();
         this.notificationService = new SmsNotificationService();
+        this.emailNotificationService = new EmailNotificationService();
     }
 
     // Setters for unit testing and DI
@@ -72,6 +75,10 @@ public class AppointmentServlet extends HttpServlet {
 
     public void setNotificationService(NotificationService notificationService) {
         this.notificationService = notificationService;
+    }
+
+    public void setEmailNotificationService(EmailNotificationService emailNotificationService) {
+        this.emailNotificationService = emailNotificationService;
     }
 
     @Override
@@ -105,6 +112,7 @@ public class AppointmentServlet extends HttpServlet {
         String patientName = request.getParameter("patientName");
         String address = request.getParameter("address");
         String contactNumber = request.getParameter("contactNumber");
+        String patientEmail = request.getParameter("patientEmail");
         String dentistIdStr = request.getParameter("dentistId");
         String treatmentIdStr = request.getParameter("treatmentId");
         String appointmentDateStr = request.getParameter("appointmentDate");
@@ -178,6 +186,19 @@ public class AppointmentServlet extends HttpServlet {
                 Appointment populatedAppt = appointmentDAO.getAppointmentByNumber(appt.getAppointmentNumber());
                 if (populatedAppt != null) {
                     notificationService.sendAppointmentAlert(populatedAppt);
+
+                    // Trigger asynchronous non-blocking Gmail SMTP confirmation if email provided
+                    if (patientEmail != null && !patientEmail.trim().isEmpty()) {
+                        emailNotificationService.sendAppointmentConfirmationAsync(
+                                patientEmail.trim(),
+                                populatedAppt.getPatientName(),
+                                populatedAppt.getDentistName(),
+                                populatedAppt.getTreatmentName(),
+                                populatedAppt.getAppointmentDate() != null ? populatedAppt.getAppointmentDate().toString() : "",
+                                populatedAppt.getAppointmentTime() != null ? populatedAppt.getAppointmentTime().toString() : "",
+                                populatedAppt.getAppointmentNumber()
+                        );
+                    }
                 }
 
                 response.sendRedirect(request.getContextPath()
@@ -239,6 +260,7 @@ public class AppointmentServlet extends HttpServlet {
         request.setAttribute("enteredPatientName", request.getParameter("patientName"));
         request.setAttribute("enteredAddress", request.getParameter("address"));
         request.setAttribute("enteredContactNumber", request.getParameter("contactNumber"));
+        request.setAttribute("enteredPatientEmail", request.getParameter("patientEmail"));
         request.setAttribute("enteredDentistId", request.getParameter("dentistId"));
         request.setAttribute("enteredTreatmentId", request.getParameter("treatmentId"));
         request.setAttribute("enteredDate", request.getParameter("appointmentDate"));
