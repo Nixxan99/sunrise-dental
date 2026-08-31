@@ -239,7 +239,9 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="badge bg-success">GET</span></td>\n                                <td><code>/api/appointments</code></td>\n                                <td>Retrieves all scheduled appointments in JSON format.</td>
+                                <td><span class="badge bg-success">GET</span></td>
+                                <td><code>/api/appointments</code></td>
+                                <td>Retrieves all scheduled appointments in JSON format.</td>
                             </tr>
                             <tr>
                                 <td><span class="badge bg-success">GET</span></td>

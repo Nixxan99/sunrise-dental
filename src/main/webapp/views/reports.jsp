@@ -280,7 +280,8 @@
                             <tbody>
                             <% if (treatmentReports != null && !treatmentReports.isEmpty()) {
                                 for (ReportDAO.TreatmentReportItem item : treatmentReports) {
-                            %>\n                                <tr>
+                            %>
+                                <tr>
                                     <td class="ps-4 fw-semibold"><%= item.getTreatmentName() %></td>
                                     <td class="text-center"><span class="badge bg-body-secondary text-body border"><%= item.getAppointmentCount() %></span></td>
                                     <td class="text-end">$<%= String.format("%.2f", item.getAverageFee()) %></td>
@@ -320,7 +321,8 @@
                             <tbody>
                             <% if (doctorReports != null && !doctorReports.isEmpty()) {
                                 for (ReportDAO.DoctorReportItem doc : doctorReports) {
-                            %>\n                                <tr>
+                            %>
+                                <tr>
                                     <td class="ps-4">
                                         <div class="fw-semibold"><%= doc.getDoctorName() %></div>
                                         <small class="text-muted"><%= doc.getSpecialization() %></small>
