@@ -44,3 +44,6 @@ Desktop.ini
 *.log
 tmp/
 temp/
+
+# Application Credentials & Local Config
+src/main/resources/config.properties

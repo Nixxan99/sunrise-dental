@@ -2,6 +2,7 @@ package com.sunrisedental.service;
 
 import com.sunrisedental.dao.NotificationLogDAO;
 import com.sunrisedental.dao.impl.NotificationLogDAOImpl;
+import com.sunrisedental.util.ConfigUtil;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
@@ -36,15 +37,8 @@ public class EmailNotificationService {
     private final ExecutorService executorService;
 
     public EmailNotificationService() {
-        String email = System.getenv("CLINIC_EMAIL");
-        if (email == null || email.trim().isEmpty()) {
-            email = System.getProperty("clinic.email");
-        }
-
-        String password = System.getenv("CLINIC_EMAIL_PASSWORD");
-        if (password == null || password.trim().isEmpty()) {
-            password = System.getProperty("clinic.email.password");
-        }
+        String email = ConfigUtil.getProperty("mail.sender");
+        String password = ConfigUtil.getProperty("mail.password");
 
         this.senderEmail = (email != null && !email.trim().isEmpty()) ? email.trim() : null;
         this.senderPassword = (password != null && !password.trim().isEmpty()) ? password.trim() : null;

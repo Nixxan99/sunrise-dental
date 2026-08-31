@@ -1,0 +1,11 @@
+# TiDB Database
+db.url=jdbc:mysql://<YOUR_TIDB_HOST>:4000/<YOUR_DB>?sslMode=VERIFY_IDENTITY&useSSL=true&serverTimezone=UTC
+db.user=<YOUR_TIDB_USER>
+db.password=<YOUR_TIDB_PASSWORD>
+
+# Google Gemini API
+gemini.api.key=YOUR_GEMINI_API_KEY
+
+# Gmail SMTP
+mail.sender=YOUR_GMAIL_ADDRESS
+mail.password=YOUR_16_CHAR_APP_PASSWORD

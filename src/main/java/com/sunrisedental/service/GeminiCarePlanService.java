@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sunrisedental.util.ConfigUtil;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
 /**
  * Service integrating Google Gemini Generative AI (gemini-1.5-flash) to generate
  * personalized patient post-treatment recovery and care plans (CIS6003 Task B).
- * Includes robust offline fallback to ensure continuous operability and reliability.
+ * Configuration is dynamically resolved via ConfigUtil with resilient offline fallback.
  */
 public class GeminiCarePlanService {
 
@@ -30,11 +31,8 @@ public class GeminiCarePlanService {
     private final Gson gson;
 
     public GeminiCarePlanService() {
-        String envKey = System.getenv("GEMINI_API_KEY");
-        if (envKey == null || envKey.trim().isEmpty()) {
-            envKey = System.getProperty("gemini.api.key");
-        }
-        this.apiKey = (envKey != null) ? envKey.trim() : null;
+        String key = ConfigUtil.getProperty("gemini.api.key");
+        this.apiKey = (key != null && !key.trim().isEmpty()) ? key.trim() : null;
         this.gson = new Gson();
     }
 

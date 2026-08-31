@@ -1,20 +1,17 @@
 package com.sunrisedental.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Singleton database connection manager for the Sunrise Dental Clinic System (CIS6003).
  * Implements thread-safe lazy initialization using the double-checked locking pattern.
- * Configured for Cloud TiDB MySQL-compatible database.
+ * Configured for Cloud TiDB MySQL-compatible database via ConfigUtil.
  */
 public class DBConnection {
 
@@ -59,31 +56,13 @@ public class DBConnection {
     }
 
     /**
-     * Loads database configuration settings from db.properties on classpath,
-     * environment variables, or system properties, falling back to default TiDB settings.
+     * Loads database configuration settings from ConfigUtil.
      */
     private void loadConfiguration() {
-        Properties properties = new Properties();
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream("db.properties")) {
-            if (in != null) {
-                properties.load(in);
-                LOGGER.info("Successfully loaded database configuration from db.properties");
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Could not load db.properties file, falling back to default settings", e);
-        }
-
-        this.url = System.getProperty("db.url",
-                System.getenv().getOrDefault("DB_URL",
-                        properties.getProperty("db.url", DEFAULT_URL)));
-
-        this.username = System.getProperty("db.user",
-                System.getenv().getOrDefault("DB_USER",
-                        properties.getProperty("db.user", DEFAULT_USER)));
-
-        this.password = System.getProperty("db.password",
-                System.getenv().getOrDefault("DB_PASSWORD",
-                        properties.getProperty("db.password", DEFAULT_PASSWORD)));
+        this.url = ConfigUtil.getProperty("db.url", DEFAULT_URL);
+        this.username = ConfigUtil.getProperty("db.user", DEFAULT_USER);
+        this.password = ConfigUtil.getProperty("db.password", DEFAULT_PASSWORD);
+        LOGGER.info("DBConnection configured with database URL: " + this.url);
     }
 
     /**
