@@ -29,5 +29,26 @@ public interface TreatmentDAO {
      * @param treatment treatment entity to persist
      * @return true if inserted, false otherwise
      */
+    boolean addTreatment(Treatment treatment);
+
+    /**
+     * Alias for addTreatment.
+     */
     boolean createTreatment(Treatment treatment);
+
+    /**
+     * Updates an existing treatment record.
+     *
+     * @param treatment treatment entity with updated values
+     * @return true if updated, false otherwise
+     */
+    boolean updateTreatment(Treatment treatment);
+
+    /**
+     * Deletes a treatment record by ID.
+     *
+     * @param id identifier of the treatment to delete
+     * @return true if deleted, false otherwise
+     */
+    boolean deleteTreatment(int id);
 }

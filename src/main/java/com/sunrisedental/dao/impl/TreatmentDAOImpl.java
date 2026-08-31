@@ -57,7 +57,10 @@ public class TreatmentDAOImpl implements TreatmentDAO {
     }
 
     @Override
-    public boolean createTreatment(Treatment treatment) {
+    public boolean addTreatment(Treatment treatment) {
+        if (treatment == null) {
+            return false;
+        }
         String sql = "INSERT INTO treatments (treatment_name, standard_fee) VALUES (?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -76,6 +79,45 @@ public class TreatmentDAOImpl implements TreatmentDAO {
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "SQL error inserting treatment: " + treatment.getTreatmentName(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean createTreatment(Treatment treatment) {
+        return addTreatment(treatment);
+    }
+
+    @Override
+    public boolean updateTreatment(Treatment treatment) {
+        if (treatment == null || treatment.getTreatmentId() <= 0) {
+            return false;
+        }
+        String sql = "UPDATE treatments SET treatment_name = ?, standard_fee = ? WHERE treatment_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, treatment.getTreatmentName());
+            ps.setDouble(2, treatment.getStandardFee());
+            ps.setInt(3, treatment.getTreatmentId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error updating treatment id: " + treatment.getTreatmentId(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteTreatment(int id) {
+        String sql = "DELETE FROM treatments WHERE treatment_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error deleting treatment id: " + id, e);
         }
         return false;
     }

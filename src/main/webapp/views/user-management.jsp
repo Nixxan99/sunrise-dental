@@ -44,7 +44,10 @@
             <i class="bi bi-hospital fs-3 me-2"></i>
             <span>Sunrise Dental Clinic</span>
         </a>
-        <div class="collapse navbar-collapse">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/dashboard">
@@ -66,10 +69,15 @@
                         <i class="bi bi-graph-up me-1"></i>Reports
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="<%= request.getContextPath() %>/admin/users">
-                        <i class="bi bi-people-fill me-1"></i>User Management
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active fw-semibold" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-1"></i>Administration
                     </a>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><a class="dropdown-item active fw-semibold" href="<%= request.getContextPath() %>/admin/users"><i class="bi bi-people me-2"></i>Manage Staff Accounts</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/dentists"><i class="bi bi-person-badge me-2"></i>Manage Dentists</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/treatments"><i class="bi bi-clipboard2-pulse me-2"></i>Manage Treatments</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">

@@ -29,5 +29,26 @@ public interface DentistDAO {
      * @param dentist dentist entity to persist
      * @return true if inserted, false otherwise
      */
+    boolean addDentist(Dentist dentist);
+
+    /**
+     * Alias for addDentist.
+     */
     boolean createDentist(Dentist dentist);
+
+    /**
+     * Updates an existing dentist record.
+     *
+     * @param dentist dentist entity with updated details
+     * @return true if updated, false otherwise
+     */
+    boolean updateDentist(Dentist dentist);
+
+    /**
+     * Deletes a dentist record by ID.
+     *
+     * @param dentistId identifier of the dentist to delete
+     * @return true if deleted, false otherwise
+     */
+    boolean deleteDentist(int dentistId);
 }

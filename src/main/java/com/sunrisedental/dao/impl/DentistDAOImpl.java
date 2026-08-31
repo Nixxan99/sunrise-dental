@@ -57,7 +57,10 @@ public class DentistDAOImpl implements DentistDAO {
     }
 
     @Override
-    public boolean createDentist(Dentist dentist) {
+    public boolean addDentist(Dentist dentist) {
+        if (dentist == null) {
+            return false;
+        }
         String sql = "INSERT INTO dentists (name, specialization, contact_number) VALUES (?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -77,6 +80,46 @@ public class DentistDAOImpl implements DentistDAO {
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "SQL error inserting dentist: " + dentist.getName(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean createDentist(Dentist dentist) {
+        return addDentist(dentist);
+    }
+
+    @Override
+    public boolean updateDentist(Dentist dentist) {
+        if (dentist == null || dentist.getDentistId() <= 0) {
+            return false;
+        }
+        String sql = "UPDATE dentists SET name = ?, specialization = ?, contact_number = ? WHERE dentist_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, dentist.getName());
+            ps.setString(2, dentist.getSpecialization());
+            ps.setString(3, dentist.getContactNumber());
+            ps.setInt(4, dentist.getDentistId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error updating dentist id: " + dentist.getDentistId(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteDentist(int dentistId) {
+        String sql = "DELETE FROM dentists WHERE dentist_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, dentistId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error deleting dentist id: " + dentistId, e);
         }
         return false;
     }

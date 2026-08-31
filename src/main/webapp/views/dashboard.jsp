@@ -62,7 +62,7 @@
             <i class="bi bi-hospital fs-3 me-2"></i>
             <span>Sunrise Dental Clinic</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-dismiss="collapse" data-bs-target="#navContent">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -89,10 +89,15 @@
                     </a>
                 </li>
                 <% if (isAdmin) { %>
-                <li class="nav-item">
-                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/admin/users">
-                        <i class="bi bi-people-fill me-1"></i>User Management
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white-50" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-1"></i>Administration
                     </a>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/users"><i class="bi bi-people me-2"></i>Manage Staff Accounts</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/dentists"><i class="bi bi-person-badge me-2"></i>Manage Dentists</a></li>
+                        <li><a class="dropdown-item" href="<%= request.getContextPath() %>/admin/treatments"><i class="bi bi-clipboard2-pulse me-2"></i>Manage Treatments</a></li>
+                    </ul>
                 </li>
                 <% } %>
                 <li class="nav-item">
