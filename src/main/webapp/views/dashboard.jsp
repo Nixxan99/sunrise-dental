@@ -83,11 +83,6 @@
                         <i class="bi bi-question-circle me-1"></i>Help
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/api/appointments" target="_blank">
-                        <i class="bi bi-code-slash me-1"></i>REST API
-                    </a>
-                </li>
             </ul>
 
             <div class="d-flex align-items-center text-white gap-3">
