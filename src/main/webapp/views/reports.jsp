@@ -1,0 +1,394 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="com.sunrisedental.dao.ReportDAO" %>
+<%@ page import="com.sunrisedental.model.User" %>
+<%
+    User currentUser = (User) session.getAttribute("user");
+    String staffName = currentUser != null ? currentUser.getFullName() : "Staff";
+    String role = currentUser != null ? currentUser.getRole() : "STAFF";
+
+    List<ReportDAO.TreatmentReportItem> treatmentReports = (List<ReportDAO.TreatmentReportItem>) request.getAttribute("treatmentReports");
+    List<ReportDAO.DoctorReportItem> doctorReports = (List<ReportDAO.DoctorReportItem>) request.getAttribute("doctorReports");
+    Map<String, Object> summary = (Map<String, Object>) request.getAttribute("summary");
+
+    int totalAppointments = summary != null && summary.get("totalAppointments") != null ? (Integer) summary.get("totalAppointments") : 0;
+    int scheduledAppointments = summary != null && summary.get("scheduledAppointments") != null ? (Integer) summary.get("scheduledAppointments") : 0;
+    int completedAppointments = summary != null && summary.get("completedAppointments") != null ? (Integer) summary.get("completedAppointments") : 0;
+    int totalPatients = summary != null && summary.get("totalPatients") != null ? (Integer) summary.get("totalPatients") : 0;
+    int totalDentists = summary != null && summary.get("totalDentists") != null ? (Integer) summary.get("totalDentists") : 0;
+    double totalRevenue = summary != null && summary.get("totalRevenue") != null ? (Double) summary.get("totalRevenue") : 0.0;
+    double avgInvoice = summary != null && summary.get("avgInvoiceValue") != null ? (Double) summary.get("avgInvoiceValue") : 0.0;
+
+    String treatmentLabelsJson = (String) request.getAttribute("treatmentLabelsJson");
+    String treatmentRevenuesJson = (String) request.getAttribute("treatmentRevenuesJson");
+    String treatmentCountsJson = (String) request.getAttribute("treatmentCountsJson");
+    String doctorLabelsJson = (String) request.getAttribute("doctorLabelsJson");
+    String doctorCountsJson = (String) request.getAttribute("doctorCountsJson");
+    String doctorRevenuesJson = (String) request.getAttribute("doctorRevenuesJson");
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Analytics & Reports - Sunrise Dental Clinic</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .report-card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            background-color: #fff;
+        }
+        @media print {
+            body {
+                background-color: #fff !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .report-card {
+                box-shadow: none !important;
+                border: 1px solid #dee2e6 !important;
+                break-inside: avoid;
+            }
+            .container-fluid {
+                width: 100% !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm no-print">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center fw-bold" href="<%= request.getContextPath() %>/dashboard">
+            <i class="bi bi-hospital fs-3 me-2"></i>
+            <span>Sunrise Dental Clinic</span>
+        </a>
+        <div class="collapse navbar-collapse" id="navContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/dashboard">
+                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=new">
+                        <i class="bi bi-calendar-plus me-1"></i>New Appointment
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/appointments?action=search">
+                        <i class="bi bi-search me-1"></i>Search Records
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active fw-medium" href="<%= request.getContextPath() %>/reports">
+                        <i class="bi bi-graph-up me-1"></i>Reports & Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">
+                        <i class="bi bi-question-circle me-1"></i>Help
+                    </a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center text-white">
+                <div class="me-3 text-end d-none d-md-block">
+                    <div class="fw-semibold"><%= staffName %></div>
+                    <small class="badge bg-light text-primary"><%= role %></small>
+                </div>
+                <a href="<%= request.getContextPath() %>/logout" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Page Body -->
+<div class="container-fluid px-4 py-4">
+
+    <!-- Page Header & Print Button -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Clinic Management Analytics & Reports</h2>
+            <p class="text-muted mb-0">Strategic decision-making reports, treatment revenue breakdown, and doctor workloads (CIS6003 Task B)</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2 no-print">
+            <button onclick="window.print()" class="btn btn-primary shadow-sm fw-semibold">
+                <i class="bi bi-printer me-1"></i>Print Management Report
+            </button>
+            <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-house me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Executive Summary Widgets -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card report-card p-3 border-start border-primary border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">Total Appointments</div>
+                        <div class="fs-3 fw-bold text-dark"><%= totalAppointments %></div>
+                        <small class="text-muted"><%= scheduledAppointments %> Scheduled | <%= completedAppointments %> Done</small>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                        <i class="bi bi-calendar-check fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card report-card p-3 border-start border-success border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">Total Clinic Revenue</div>
+                        <div class="fs-3 fw-bold text-success">$<%= String.format("%.2f", totalRevenue) %></div>
+                        <small class="text-muted">Avg Invoice: $<%= String.format("%.2f", avgInvoice) %></small>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                        <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card report-card p-3 border-start border-info border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">Active Dentists</div>
+                        <div class="fs-3 fw-bold text-info"><%= totalDentists %></div>
+                        <small class="text-muted">Specialists on roster</small>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle">
+                        <i class="bi bi-person-badge fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card report-card p-3 border-start border-warning border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">Registered Patients</div>
+                        <div class="fs-3 fw-bold text-warning"><%= totalPatients %></div>
+                        <small class="text-muted">In clinic registry</small>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                        <i class="bi bi-people fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Revenue by Treatment -->
+        <div class="col-12 col-lg-7">
+            <div class="card report-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Revenue by Dental Procedure ($)
+                </h5>
+                <div>
+                    <canvas id="treatmentRevenueChart" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Doctor Workload Breakdown -->
+        <div class="col-12 col-lg-5">
+            <div class="card report-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-pie-chart-fill me-2 text-success"></i>Appointments per Attending Doctor
+                </h5>
+                <div>
+                    <canvas id="doctorWorkloadChart" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Summary Tables Section -->
+    <div class="row g-4">
+        <!-- Table 1: Treatment Revenue Breakdown -->
+        <div class="col-12 col-lg-7">
+            <div class="card report-card">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-table me-2 text-primary"></i>Treatment Procedure Performance Breakdown
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Treatment / Procedure</th>
+                                    <th class="text-center">Bookings</th>
+                                    <th class="text-end">Standard Fee</th>
+                                    <th class="text-end pe-3">Total Earned ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <% if (treatmentReports != null && !treatmentReports.isEmpty()) {
+                                for (ReportDAO.TreatmentReportItem item : treatmentReports) {
+                            %>
+                                <tr>
+                                    <td class="ps-3 fw-semibold"><%= item.getTreatmentName() %></td>
+                                    <td class="text-center"><span class="badge bg-light text-dark border"><%= item.getAppointmentCount() %></span></td>
+                                    <td class="text-end">$<%= String.format("%.2f", item.getAverageFee()) %></td>
+                                    <td class="text-end pe-3 fw-bold text-success">$<%= String.format("%.2f", item.getTotalRevenue()) %></td>
+                                </tr>
+                            <%  }
+                               } else { %>
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">No treatment data recorded.</td>
+                                </tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table 2: Doctor Workload Summary -->
+        <div class="col-12 col-lg-5">
+            <div class="card report-card">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-person-check-fill me-2 text-success"></i>Doctor Activity Summary
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Doctor</th>
+                                    <th class="text-center">Appointments</th>
+                                    <th class="text-end pe-3">Revenue ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <% if (doctorReports != null && !doctorReports.isEmpty()) {
+                                for (ReportDAO.DoctorReportItem doc : doctorReports) {
+                            %>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="fw-semibold"><%= doc.getDoctorName() %></div>
+                                        <small class="text-muted"><%= doc.getSpecialization() %></small>
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-primary"><%= doc.getAppointmentCount() %></span></td>
+                                    <td class="text-end pe-3 fw-bold text-dark">$<%= String.format("%.2f", doc.getTotalRevenue()) %></td>
+                                </tr>
+                            <%  }
+                               } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center py-3 text-muted">No doctor data recorded.</td>
+                                </tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js Render Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Chart 1: Bar Chart for Treatment Revenue
+        const treatmentLabels = <%= treatmentLabelsJson != null ? treatmentLabelsJson : "[]" %>;
+        const treatmentRevenues = <%= treatmentRevenuesJson != null ? treatmentRevenuesJson : "[]" %>;
+
+        const ctxTreatment = document.getElementById('treatmentRevenueChart').getContext('2d');
+        new Chart(ctxTreatment, {
+            type: 'bar',
+            data: {
+                labels: treatmentLabels,
+                datasets: [{
+                    label: 'Total Revenue ($)',
+                    data: treatmentRevenues,
+                    backgroundColor: 'rgba(13, 110, 253, 0.75)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '$' + value; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Doughnut Chart for Doctor Workload
+        const doctorLabels = <%= doctorLabelsJson != null ? doctorLabelsJson : "[]" %>;
+        const doctorCounts = <%= doctorCountsJson != null ? doctorCountsJson : "[]" %>;
+
+        const ctxDoctor = document.getElementById('doctorWorkloadChart').getContext('2d');
+        new Chart(ctxDoctor, {
+            type: 'doughnut',
+            data: {
+                labels: doctorLabels,
+                datasets: [{
+                    data: doctorCounts,
+                    backgroundColor: [
+                        '#0d6efd',
+                        '#198754',
+                        '#0dcaf0',
+                        '#ffc107',
+                        '#6f42c1',
+                        '#fd7e14'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -12,6 +12,7 @@ import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Dentist;
 import com.sunrisedental.model.Patient;
 import com.sunrisedental.model.Treatment;
+import com.sunrisedental.service.NotificationService;
 import com.sunrisedental.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,7 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller handling appointment registration, search, and dashboard aggregation.
+ * Controller handling appointment registration, search, and notification dispatching.
  */
 @WebServlet(name = "AppointmentServlet", urlPatterns = {"/appointments"})
 public class AppointmentServlet extends HttpServlet {
@@ -39,6 +40,7 @@ public class AppointmentServlet extends HttpServlet {
     private DentistDAO dentistDAO;
     private TreatmentDAO treatmentDAO;
     private PatientDAO patientDAO;
+    private NotificationService notificationService;
 
     @Override
     public void init() {
@@ -46,6 +48,7 @@ public class AppointmentServlet extends HttpServlet {
         this.dentistDAO = new DentistDAOImpl();
         this.treatmentDAO = new TreatmentDAOImpl();
         this.patientDAO = new PatientDAOImpl();
+        this.notificationService = new NotificationService();
     }
 
     // Setters for unit testing and DI
@@ -63,6 +66,10 @@ public class AppointmentServlet extends HttpServlet {
 
     public void setPatientDAO(PatientDAO patientDAO) {
         this.patientDAO = patientDAO;
+    }
+
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -133,7 +140,6 @@ public class AppointmentServlet extends HttpServlet {
         LocalTime appointmentTime;
         try {
             appointmentDate = LocalDate.parse(appointmentDateStr.trim());
-            // Handle HH:mm or HH:mm:ss format
             String timeClean = appointmentTimeStr.trim();
             if (timeClean.length() == 5) {
                 timeClean = timeClean + ":00";
@@ -166,9 +172,15 @@ public class AppointmentServlet extends HttpServlet {
 
             boolean success = appointmentDAO.registerAppointment(appt);
             if (success) {
+                // Trigger notification observers (SMS & Email alerts)
+                Appointment populatedAppt = appointmentDAO.getAppointmentByNumber(appt.getAppointmentNumber());
+                if (populatedAppt != null) {
+                    notificationService.notifyAppointmentBooked(populatedAppt, patient.getContactNumber());
+                }
+
                 response.sendRedirect(request.getContextPath()
                         + "/appointments?action=view&appointmentNumber=" + appt.getAppointmentNumber()
-                        + "&success=registered");
+                        + "&success=registered&notified=true");
             } else {
                 forwardWithValidationError(request, response, "Database error: Could not register appointment. Please try again.");
             }
@@ -195,6 +207,14 @@ public class AppointmentServlet extends HttpServlet {
             Appointment appt = appointmentDAO.getAppointmentByNumber(apptNumberStr.trim());
             if (appt != null) {
                 request.setAttribute("appointment", appt);
+
+                // Fetch patient contact number for notification badge
+                Patient patient = patientDAO.getPatientById(appt.getPatientId());
+                String contact = (patient != null) ? patient.getContactNumber() : "Registered Mobile";
+                request.setAttribute("patientContact", contact);
+
+                String smsPreview = notificationService.formatSmsNotification(appt);
+                request.setAttribute("smsPreview", smsPreview);
             } else {
                 request.setAttribute("searchError", "No appointment found with number: " + apptNumberStr.trim());
             }

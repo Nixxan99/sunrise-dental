@@ -82,8 +82,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
+                        <i class="bi bi-graph-up me-1"></i>Reports & Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">
-                        <i class="bi bi-question-circle me-1"></i>User Guide / Help
+                        <i class="bi bi-question-circle me-1"></i>Help
                     </a>
                 </li>
                 <li class="nav-item">
@@ -118,6 +123,9 @@
         <div class="mt-3 mt-md-0 d-flex gap-2">
             <a href="<%= request.getContextPath() %>/appointments?action=new" class="btn btn-primary shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i>Book Appointment
+            </a>
+            <a href="<%= request.getContextPath() %>/reports" class="btn btn-outline-primary shadow-sm">
+                <i class="bi bi-graph-up me-1"></i>View Reports
             </a>
             <a href="<%= request.getContextPath() %>/appointments?action=search" class="btn btn-outline-secondary shadow-sm">
                 <i class="bi bi-search me-1"></i>Find Appointment

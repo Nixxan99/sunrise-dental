@@ -69,6 +69,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
+                        <i class="bi bi-graph-up me-1"></i>Reports
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/views/help.jsp">
                         <i class="bi bi-question-circle me-1"></i>Help
                     </a>

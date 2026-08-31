@@ -8,6 +8,9 @@
     String searchError = (String) request.getAttribute("searchError");
     String searchedNumber = (String) request.getAttribute("searchedNumber");
     String success = request.getParameter("success");
+    String notified = request.getParameter("notified");
+    String patientContact = (String) request.getAttribute("patientContact");
+    String smsPreview = (String) request.getAttribute("smsPreview");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,6 +31,10 @@
             border: none;
             border-radius: 0.75rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .notification-card {
+            background-color: #e8f5e9;
+            border-left: 4px solid #2e7d32;
         }
     </style>
 </head>
@@ -55,6 +62,11 @@
                 <li class="nav-item">
                     <a class="nav-link active fw-medium" href="<%= request.getContextPath() %>/appointments?action=search">
                         <i class="bi bi-search me-1"></i>Search Records
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/reports">
+                        <i class="bi bi-graph-up me-1"></i>Reports
                     </a>
                 </li>
                 <li class="nav-item">
@@ -105,6 +117,28 @@
                     <i class="bi bi-check-circle-fill me-2"></i>
                     <strong>Appointment Registered Successfully!</strong> Record is now scheduled and ready for billing.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Notification Service Alert Toast / Badge (Task B) -->
+    <% if ("true".equals(notified) || appt != null) { %>
+        <div class="row justify-content-center mb-3">
+            <div class="col-12 col-lg-8">
+                <div class="card notification-card p-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success me-2"><i class="bi bi-send-check me-1"></i>SMS Alert Dispatched</span>
+                            <span class="fw-bold text-success">Automated Patient Notification Active</span>
+                        </div>
+                        <small class="text-muted"><i class="bi bi-telephone me-1"></i>Recipient: <%= patientContact != null ? patientContact : "Registered Mobile" %></small>
+                    </div>
+                    <div class="small text-secondary bg-white p-2 rounded border mt-2">
+                        <i class="bi bi-chat-left-dots text-primary me-1"></i>
+                        <strong>Simulated SMS Payload:</strong>
+                        <%= smsPreview != null ? smsPreview : ("Dear " + (appt != null ? appt.getPatientName() : "Patient") + ", your appointment #" + (appt != null ? appt.getAppointmentNumber() : "") + " is confirmed. Sunrise Dental Clinic.") %>
+                    </div>
                 </div>
             </div>
         </div>
