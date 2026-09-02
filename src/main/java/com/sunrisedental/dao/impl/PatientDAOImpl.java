@@ -44,17 +44,18 @@ public class PatientDAOImpl implements PatientDAO {
              Statement stmt = conn.createStatement()) {
             try {
                 stmt.execute("ALTER TABLE patients ADD COLUMN email VARCHAR(100)");
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                LOGGER.log(Level.INFO, "Note on email column migration: " + e.getMessage());
+            }
             try {
                 stmt.execute("ALTER TABLE patients ADD COLUMN nic VARCHAR(20)");
-            } catch (Exception ignored) {}
-            try {
-                stmt.execute("CREATE INDEX idx_patient_nic ON patients(nic)");
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                LOGGER.log(Level.INFO, "Note on nic column migration: " + e.getMessage());
+            }
             schemaVerified = true;
         } catch (Exception e) {
             schemaVerified = true;
-            LOGGER.log(Level.FINE, "Schema check on patients columns: " + e.getMessage());
+            LOGGER.log(Level.WARNING, "Schema check on patients columns: " + e.getMessage());
         }
     }
 
@@ -148,6 +149,7 @@ public class PatientDAOImpl implements PatientDAO {
                 }
             }
         } catch (SQLException e) {
+            System.err.println("REGISTER_PATIENT_ERROR: " + e.getMessage());
             LOGGER.log(Level.SEVERE, "SQL error registering patient: " + patient.getFullName(), e);
         }
         return -1;
