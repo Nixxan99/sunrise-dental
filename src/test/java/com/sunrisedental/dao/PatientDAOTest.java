@@ -68,7 +68,7 @@ class PatientDAOTest {
         String testEmail = "test" + System.currentTimeMillis() + "@sunrisedental.lk";
         String testAddress = "123 Sample Avenue, Colombo";
 
-        Patient newPatient = new Patient(testName, testNic, testAddress, testContact, testEmail);
+        Patient newPatient = new Patient(testName, testAddress, testContact, testEmail, testNic);
         int generatedId = patientDAO.registerPatient(newPatient);
 
         assertTrue(generatedId > 0, "Generated patient ID should be positive");
@@ -113,7 +113,7 @@ class PatientDAOTest {
     void shouldPerformUniversalSearch() {
         String uniqueSuffix = String.valueOf(System.currentTimeMillis());
         String testNic = "1995" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 8));
-        Patient sample = new Patient("UniversalTarget " + uniqueSuffix, testNic, "Galle", "075" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 7)), "univ" + uniqueSuffix + "@domain.com");
+        Patient sample = new Patient("UniversalTarget " + uniqueSuffix, "Galle", "075" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 7)), "univ" + uniqueSuffix + "@domain.com", testNic);
         int id = patientDAO.registerPatient(sample);
         assertTrue(id > 0);
 
