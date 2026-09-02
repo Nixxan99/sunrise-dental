@@ -110,9 +110,9 @@ class EmailNotificationServiceTest {
         String log = capturedLogs.get(0);
         assertTrue(log.startsWith("anura@example.com:SENT:"));
         assertTrue(log.contains("INV-801"));
-        assertTrue(log.contains("Treatment Fee    : $8500.00"));
-        assertTrue(log.contains("Consultation Fee : $1500.00"));
-        assertTrue(log.contains("Total Amount     : $10000.00"));
+        assertTrue(log.contains("Treatment Fee    : LKR 8500.00"));
+        assertTrue(log.contains("Consultation Fee : LKR 1500.00"));
+        assertTrue(log.contains("Total Amount     : LKR 10000.00"));
         assertTrue(log.contains("Avoid hot drinks for 24 hours"));
     }
 

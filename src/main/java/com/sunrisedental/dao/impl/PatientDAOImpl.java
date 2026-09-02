@@ -43,10 +43,13 @@ public class PatientDAOImpl implements PatientDAO {
         try (Connection conn = DBConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement()) {
             try {
-                stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS email VARCHAR(100)");
+                stmt.execute("ALTER TABLE patients ADD COLUMN email VARCHAR(100)");
             } catch (Exception ignored) {}
             try {
-                stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS nic VARCHAR(20)");
+                stmt.execute("ALTER TABLE patients ADD COLUMN nic VARCHAR(20)");
+            } catch (Exception ignored) {}
+            try {
+                stmt.execute("CREATE INDEX idx_patient_nic ON patients(nic)");
             } catch (Exception ignored) {}
             schemaVerified = true;
         } catch (Exception e) {
