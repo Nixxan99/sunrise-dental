@@ -75,7 +75,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navContent">
+        <div class="collapse navbar-collapse" id=\"navContent\">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
                 <li class="nav-item">
                     <a class="nav-link text-white-50" href="<%= request.getContextPath() %>/dashboard">
@@ -221,7 +221,7 @@
                             <tr>
                                 <th>Item / Clinical Service Description</th>
                                 <th class="text-center" style="width: 120px;">Qty</th>
-                                <th class="text-end" style="width: 180px;">Amount ($)</th>
+                                <th class="text-end" style="width: 180px;">Amount (LKR)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -231,7 +231,7 @@
                                     <small class="text-muted"><%= (appt != null && appt.getTreatmentName() != null) ? appt.getTreatmentName() : "General Dental Treatment" %></small>
                                 </td>
                                 <td class="text-center">1</td>
-                                <td class="text-end fw-semibold">$<%= String.format("%.2f", treatmentCost) %></td>
+                                <td class="text-end fw-semibold">LKR <%= String.format("%.2f", treatmentCost) %></td>
                             </tr>
                             <tr>
                                 <td>
@@ -239,17 +239,17 @@
                                     <small class="text-muted">Clinical diagnostic examination & consultation</small>
                                 </td>
                                 <td class="text-center">1</td>
-                                <td class="text-end fw-semibold">$<%= String.format("%.2f", consultationFee) %></td>
+                                <td class="text-end fw-semibold">LKR <%= String.format("%.2f", consultationFee) %></td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th colspan="2" class="text-end text-uppercase fs-6">Subtotal:</th>
-                                <td class="text-end fw-semibold">$<%= String.format("%.2f", totalAmount) %></td>
+                                <td class="text-end fw-semibold">LKR <%= String.format("%.2f", totalAmount) %></td>
                             </tr>
                             <tr>
                                 <th colspan="2" class="text-end text-uppercase fs-5 text-primary">Total Amount Due:</th>
-                                <td class="text-end fw-bold fs-5 text-primary">$<%= String.format("%.2f", totalAmount) %></td>
+                                <td class="text-end fw-bold fs-5 text-primary">LKR <%= String.format("%.2f", totalAmount) %></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -264,13 +264,13 @@
                         <div class="col-md-4">
                             <div class="form-floating">
                                 <input type="number" step="0.01" min="0" class="form-control" id="treatmentCost" name="treatmentCost" value="<%= treatmentCost %>" required>
-                                <label for="treatmentCost">Treatment Fee ($)</label>
+                                <label for="treatmentCost">Treatment Fee (LKR)</label>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating">
                                 <input type="number" step="0.01" min="0" class="form-control" id="consultationFee" name="consultationFee" value="<%= consultationFee %>" required>
-                                <label for="consultationFee">Consultation Fee ($)</label>
+                                <label for="consultationFee">Consultation Fee (LKR)</label>
                             </div>
                         </div>
                         <div class="col-md-4">

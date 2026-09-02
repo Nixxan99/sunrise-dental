@@ -170,6 +170,47 @@ public class AppointmentDAOImpl implements AppointmentDAO {
     }
 
     @Override
+    public List<Appointment> searchAppointmentsUniversal(String term) {
+        if (term == null || term.trim().isEmpty()) {
+            return getAllAppointments();
+        }
+
+        List<Appointment> list = new ArrayList<>();
+        String cleanTerm = term.trim();
+        String pattern = "%" + cleanTerm.toLowerCase() + "%";
+
+        int numericApptNumber = -1;
+        try {
+            numericApptNumber = Integer.parseInt(cleanTerm.replaceAll("\\D", ""));
+        } catch (Exception ignored) {}
+
+        String sql = SELECT_JOINED_APPOINTMENT +
+                "WHERE LOWER(p.full_name) LIKE ? " +
+                "   OR LOWER(COALESCE(p.nic, '')) LIKE ? " +
+                "   OR p.contact_number LIKE ? " +
+                "   OR a.appointment_number = ? " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time ASC";
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            ps.setString(3, pattern);
+            ps.setInt(4, numericApptNumber > 0 ? numericApptNumber : -1);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapJoinedResultSetToAppointment(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL error searching appointments with term: " + term, e);
+        }
+        return list;
+    }
+
+    @Override
     public boolean updateStatus(int appointmentNumber, String status) {
         String sql = "UPDATE appointments SET status = ? WHERE appointment_number = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();

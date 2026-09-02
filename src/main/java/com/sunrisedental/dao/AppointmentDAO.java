@@ -41,6 +41,14 @@ public interface AppointmentDAO {
     List<Appointment> getAllAppointments();
 
     /**
+     * Universal search matching appointment number, patient name, patient contact number, or patient NIC.
+     *
+     * @param term search term
+     * @return list of matching appointments with joined details
+     */
+    List<Appointment> searchAppointmentsUniversal(String term);
+
+    /**
      * Updates status of an appointment (e.g., SCHEDULED, COMPLETED, CANCELLED).
      *
      * @param appointmentNumber target appointment number

@@ -177,9 +177,9 @@ public class EmailNotificationService {
         sb.append(String.format("Attending Doctor : %s\n", dentistName));
         sb.append(String.format("Treatment Service: %s\n", treatmentName));
         sb.append("----------------------------------------------------\n");
-        sb.append(String.format("Treatment Fee    : $%.2f\n", treatmentCost));
-        sb.append(String.format("Consultation Fee : $%.2f\n", consultationFee));
-        sb.append(String.format("Total Amount     : $%.2f\n", totalAmount));
+        sb.append(String.format("Treatment Fee    : LKR %.2f\n", treatmentCost));
+        sb.append(String.format("Consultation Fee : LKR %.2f\n", consultationFee));
+        sb.append(String.format("Total Amount     : LKR %.2f\n", totalAmount));
         sb.append(String.format("Payment Status   : %s\n", paymentStatus));
         sb.append("====================================================\n\n");
 

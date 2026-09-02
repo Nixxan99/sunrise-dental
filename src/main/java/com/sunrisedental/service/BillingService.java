@@ -101,9 +101,9 @@ public class BillingService {
         sb.append(String.format(Locale.US, "Dentist / Doctor:      %s%n", dentistName));
         sb.append(String.format(Locale.US, "Treatment Procedure:   %s%n", treatmentName));
         sb.append("----------------------------------------------------\n");
-        sb.append(String.format(Locale.US, "Consultation Fee:      $%.2f%n", bill.getConsultationFee()));
-        sb.append(String.format(Locale.US, "Treatment Cost:        $%.2f%n", bill.getTreatmentCost()));
-        sb.append(String.format(Locale.US, "Total Amount Due:      $%.2f%n", bill.getTotalAmount()));
+        sb.append(String.format(Locale.US, "Consultation Fee:      LKR %.2f%n", bill.getConsultationFee()));
+        sb.append(String.format(Locale.US, "Treatment Cost:        LKR %.2f%n", bill.getTreatmentCost()));
+        sb.append(String.format(Locale.US, "Total Amount Due:      LKR %.2f%n", bill.getTotalAmount()));
         sb.append("----------------------------------------------------\n");
         sb.append(String.format(Locale.US, "Payment Status:        %s%n", bill.getPaymentStatus()));
         sb.append(String.format(Locale.US, "Date Issued:           %s%n", formattedDate));

@@ -61,6 +61,48 @@ class ValidationUtilTest {
     }
 
     @Nested
+    @DisplayName("National Identity Card (NIC) Validation")
+    class NicValidationTests {
+
+        @ParameterizedTest(name = "Valid NIC: {0}")
+        @ValueSource(strings = {
+                "853451234V",
+                "853451234v",
+                "921234567X",
+                "921234567x",
+                "198534512340",
+                "200012345678",
+                " 853451234V "
+        })
+        void shouldAcceptValidSriLankanNics(String nic) {
+            assertTrue(ValidationUtil.isValidNic(nic),
+                    "Expected NIC to be valid: " + nic);
+        }
+
+        @ParameterizedTest(name = "Invalid NIC: {0}")
+        @ValueSource(strings = {
+                "85345123",        // 8 digits (too short)
+                "8534512345V",     // 10 digits + V (too long)
+                "853451234A",      // Invalid suffix letter
+                "19853451234",     // 11 digits (new format must be 12)
+                "1985345123401",   // 13 digits
+                "abcdefghijk",     // Letters
+                "",                // Empty
+                "   "              // Whitespace
+        })
+        void shouldRejectInvalidNics(String nic) {
+            assertFalse(ValidationUtil.isValidNic(nic),
+                    "Expected NIC to be rejected: " + nic);
+        }
+
+        @Test
+        void shouldRejectNullNic() {
+            assertFalse(ValidationUtil.isValidNic(null),
+                    "Null NIC should be rejected");
+        }
+    }
+
+    @Nested
     @DisplayName("Appointment Date Validation (Not in the Past)")
     class AppointmentDateValidationTests {
 

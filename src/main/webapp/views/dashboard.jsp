@@ -189,7 +189,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Total Revenue</div>
-                        <div class="fs-2 fw-bold text-info">$<%= String.format("%.2f", revenue) %></div>
+                        <div class="fs-2 fw-bold text-info">LKR <%= String.format("%.2f", revenue) %></div>
                     </div>
                     <div class="badge-subtle-primary p-3 rounded-circle">
                         <i class="bi bi-cash-stack fs-3 text-info"></i>
@@ -199,17 +199,38 @@
         </div>
     </div>
 
-    <!-- Appointments Data Table Card -->
+    <!-- Appointments Data Table Card with Sorting Controls -->
     <div class="card clinic-card mb-4 overflow-hidden">
-        <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center px-4">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-list-task me-2 text-primary"></i>Recent Clinic Appointments
-            </h5>
-            <span class="badge bg-secondary"><%= appointments != null ? appointments.size() : 0 %> records</span>
+        <div class="card-header bg-transparent py-3 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 px-4">
+            <div>
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-list-task me-2 text-primary"></i>Recent Clinic Appointments
+                </h5>
+            </div>
+
+            <!-- Sorting Dropdown and Chips -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="small text-muted fw-semibold d-none d-sm-inline"><i class="bi bi-sort-down me-1"></i>Sort by:</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Appointment Sorters">
+                    <button type="button" class="btn btn-outline-primary sort-btn active" data-sort="date-desc" title="Appointment Date (Newest first)">
+                        <i class="bi bi-calendar-event me-1"></i>Date (Newest)
+                    </button>
+                    <button type="button" class="btn btn-outline-primary sort-btn" data-sort="date-asc" title="Appointment Date (Oldest first)">
+                        <i class="bi bi-calendar me-1"></i>Date (Oldest)
+                    </button>
+                    <button type="button" class="btn btn-outline-primary sort-btn" data-sort="patient-asc" title="Patient Name (A-Z)">
+                        <i class="bi bi-person me-1"></i>Patient (A-Z)
+                    </button>
+                    <button type="button" class="btn btn-outline-primary sort-btn" data-sort="doctor-asc" title="Doctor Name">
+                        <i class="bi bi-person-badge me-1"></i>Doctor
+                    </button>
+                </div>
+                <span class="badge bg-secondary ms-2" id="appt-count-badge"><%= appointments != null ? appointments.size() : 0 %> records</span>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle table-clinic mb-0">
+                <table class="table table-hover align-middle table-clinic mb-0" id="appointments-table">
                     <thead>
                         <tr>
                             <th class="ps-4">Appt #</th>
@@ -223,23 +244,32 @@
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="appointments-tbody">
                     <% if (appointments != null && !appointments.isEmpty()) {
                         for (Appointment a : appointments) {
+                            String patientDisplayName = a.getPatientName() != null ? a.getPatientName() : "Patient #" + a.getPatientId();
+                            String dentistDisplayName = a.getDentistName() != null ? a.getDentistName() : "Doctor #" + a.getDentistId();
+                            String dateStr = a.getAppointmentDate() != null ? a.getAppointmentDate().toString() : "";
+                            String timeStr = a.getAppointmentTime() != null ? a.getAppointmentTime().toString() : "";
                     %>
-                        <tr>
+                        <tr class="appt-row"
+                            data-date="<%= dateStr %>"
+                            data-time="<%= timeStr %>"
+                            data-patient="<%= patientDisplayName.toLowerCase() %>"
+                            data-doctor="<%= dentistDisplayName.toLowerCase() %>"
+                            data-number="<%= a.getAppointmentNumber() %>">
                             <td class="ps-4 fw-bold text-primary">#<%= a.getAppointmentNumber() %></td>
                             <td class="fw-semibold">
                                 <a href="<%= request.getContextPath() %>/patients?action=view&id=<%= a.getPatientId() %>" class="text-decoration-none text-body fw-bold" title="View Patient Profile & History">
-                                    <%= a.getPatientName() != null ? a.getPatientName() : "Patient #" + a.getPatientId() %>
+                                    <%= patientDisplayName %>
                                     <i class="bi bi-box-arrow-up-right small text-muted ms-1"></i>
                                 </a>
                             </td>
-                            <td><i class="bi bi-person-badge text-muted me-1"></i><%= a.getDentistName() != null ? a.getDentistName() : "Doctor #" + a.getDentistId() %></td>
+                            <td><i class="bi bi-person-badge text-muted me-1"></i><%= dentistDisplayName %></td>
                             <td><span class="badge bg-body-secondary text-body border"><%= a.getTreatmentName() != null ? a.getTreatmentName() : "Treatment #" + a.getTreatmentId() %></span></td>
-                            <td><%= a.getAppointmentDate() %></td>
-                            <td><%= a.getAppointmentTime() %></td>
-                            <td class="fw-semibold">$<%= String.format("%.2f", a.getCost()) %></td>
+                            <td><%= dateStr %></td>
+                            <td><%= timeStr %></td>
+                            <td class="fw-semibold">LKR <%= String.format("%.2f", a.getCost()) %></td>
                             <td>
                                 <% if ("COMPLETED".equalsIgnoreCase(a.getStatus())) { %>
                                     <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>COMPLETED</span>
@@ -262,7 +292,7 @@
                         </tr>
                     <%  }
                        } else { %>
-                        <tr>
+                        <tr id="empty-row">
                             <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
                                 No appointments registered in the system yet.
@@ -280,6 +310,64 @@
         </div>
     </div>
 </div>
+
+<!-- Instant Client-Side Sorter Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sortButtons = document.querySelectorAll(".sort-btn");
+    const tbody = document.getElementById("appointments-tbody");
+
+    if (!tbody) return;
+
+    sortButtons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            sortButtons.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            const sortType = this.getAttribute("data-sort");
+            const rows = Array.from(tbody.querySelectorAll(".appt-row"));
+            if (rows.length === 0) return;
+
+            rows.sort((rowA, rowB) => {
+                const dateA = rowA.getAttribute("data-date") || "";
+                const dateB = rowB.getAttribute("data-date") || "";
+                const timeA = rowA.getAttribute("data-time") || "";
+                const timeB = rowB.getAttribute("data-time") || "";
+                const patA = rowA.getAttribute("data-patient") || "";
+                const patB = rowB.getAttribute("data-patient") || "";
+                const docA = rowA.getAttribute("data-doctor") || "";
+                const docB = rowB.getAttribute("data-doctor") || "";
+                const numA = parseInt(rowA.getAttribute("data-number")) || 0;
+                const numB = parseInt(rowB.getAttribute("data-number")) || 0;
+
+                if (sortType === "date-desc") {
+                    const dtA = (dateA + " " + timeA).trim();
+                    const dtB = (dateB + " " + timeB).trim();
+                    if (dtA !== dtB) return dtB.localeCompare(dtA);
+                    return numB - numA;
+                } else if (sortType === "date-asc") {
+                    const dtA = (dateA + " " + timeA).trim();
+                    const dtB = (dateB + " " + timeB).trim();
+                    if (dtA !== dtB) return dtA.localeCompare(dtB);
+                    return numA - numB;
+                } else if (sortType === "patient-asc") {
+                    const cmp = patA.localeCompare(patB);
+                    if (cmp !== 0) return cmp;
+                    return numB - numA;
+                } else if (sortType === "doctor-asc") {
+                    const cmp = docA.localeCompare(docB);
+                    if (cmp !== 0) return cmp;
+                    return numB - numA;
+                }
+                return 0;
+            });
+
+            // Re-append sorted rows to tbody
+            rows.forEach(r => tbody.appendChild(r));
+        });
+    });
+});
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<%= request.getContextPath() %>/js/theme-switcher.js"></script>

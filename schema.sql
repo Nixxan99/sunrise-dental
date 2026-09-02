@@ -81,15 +81,17 @@ CREATE TABLE treatments (
 ) ENGINE=InnoDB;
 
 -- ============================================================================
--- Table: patients (Registered Patients & Demographics)
+-- Table: patients (Registered Patients & Demographics with NIC)
 -- ============================================================================
 CREATE TABLE patients (
     patient_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
+    nic VARCHAR(20),
     address VARCHAR(255),
     contact_number VARCHAR(20) NOT NULL,
     email VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_patient_nic (nic),
     INDEX idx_patient_contact (contact_number),
     INDEX idx_patient_email (email)
 ) ENGINE=InnoDB;
@@ -206,10 +208,10 @@ INSERT INTO treatments (treatment_name, standard_fee) VALUES
 ('Dental Crown & Bridge Fitting', 18000.00);
 
 -- 4. Seed Patients
-INSERT INTO patients (full_name, address, contact_number, email) VALUES
-('Nimal Fernando', 'No. 45 Galle Road, Colombo 03', '0773344556', 'nimal.fernando@example.com'),
-('Sunethra Bandara', 'No. 12 Kandy Road, Kiribathgoda', '0712233445', 'sunethra.b@example.com'),
-('Chaminda Vass', 'No. 78 Marine Drive, Bambalapitiya', '0789988776', 'chaminda.vass@example.com');
+INSERT INTO patients (full_name, nic, address, contact_number, email) VALUES
+('Nimal Fernando', '198512345678', 'No. 45 Galle Road, Colombo 03', '0773344556', 'nimal.fernando@example.com'),
+('Sunethra Bandara', '199267890123', 'No. 12 Kandy Road, Kiribathgoda', '0712233445', 'sunethra.b@example.com'),
+('Chaminda Vass', '741234567V', 'No. 78 Marine Drive, Bambalapitiya', '0789988776', 'chaminda.vass@example.com');
 
 -- 5. Seed Initial Appointments
 INSERT INTO appointments (patient_id, dentist_id, treatment_id, appointment_date, appointment_time, status) VALUES

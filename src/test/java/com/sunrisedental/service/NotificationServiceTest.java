@@ -69,6 +69,8 @@ class NotificationServiceTest {
             @Override
             public List<Patient> searchPatients(String query) { return Collections.emptyList(); }
             @Override
+            public List<Patient> searchPatientsUniversal(String term) { return Collections.emptyList(); }
+            @Override
             public List<PatientAppointmentHistoryItem> getPatientAppointmentHistory(int patientId) { return Collections.emptyList(); }
             @Override
             public Map<String, Object> getPatientAnalytics() { return Collections.emptyMap(); }

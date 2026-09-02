@@ -161,7 +161,7 @@
             <div class="col-md-5">
                 <div class="form-floating">
                     <input type="number" step="0.01" min="0" class="form-control" id="editStandardFee" name="standardFee" value="<%= editTreatment.getStandardFee() %>" required>
-                    <label for="editStandardFee">Standard Fee ($) <span class="text-danger">*</span></label>
+                    <label for="editStandardFee">Standard Fee (LKR) <span class="text-danger">*</span></label>
                 </div>
             </div>
             <div class="col-12 text-end mt-3">
@@ -181,7 +181,7 @@
                     <tr>
                         <th class="ps-3" style="width: 100px;">ID</th>
                         <th>Treatment / Procedure Name</th>
-                        <th class="text-end" style="width: 200px;">Standard Fee ($)</th>
+                        <th class="text-end" style="width: 200px;">Standard Fee (LKR)</th>
                         <th class="text-end pe-3" style="width: 180px;">Actions</th>
                     </tr>
                 </thead>
@@ -194,7 +194,7 @@
                                     <div class="fw-bold"><%= t.getTreatmentName() %></div>
                                 </td>
                                 <td class="text-end">
-                                    <span class="fw-bold text-success fs-6">$<%= String.format("%.2f", t.getStandardFee()) %></span>
+                                    <span class="fw-bold text-success fs-6">LKR <%= String.format("%.2f", t.getStandardFee()) %></span>
                                 </td>
                                 <td class="text-end pe-3">
                                     <a href="<%= request.getContextPath() %>/admin/treatments?action=edit&id=<%= t.getTreatmentId() %>" class="btn btn-outline-primary btn-sm me-1" title="Edit Treatment">
@@ -238,7 +238,7 @@
                     </div>
                     <div class="form-floating mb-3">
                         <input type="number" step="0.01" min="0" class="form-control" id="modalFee" name="standardFee" placeholder="Standard Fee" required>
-                        <label for="modalFee">Standard Fee ($) <span class="text-danger">*</span></label>
+                        <label for="modalFee">Standard Fee (LKR) <span class="text-danger">*</span></label>
                     </div>
                 </div>
                 <div class="modal-footer bg-body-tertiary">

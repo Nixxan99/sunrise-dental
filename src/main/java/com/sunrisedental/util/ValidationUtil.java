@@ -19,6 +19,15 @@ public final class ValidationUtil {
     private static final Pattern SRI_LANKAN_PHONE_PATTERN =
             Pattern.compile("^(?:07\\d{8}|\\+947\\d{8}|00947\\d{8})$");
 
+    /**
+     * Sri Lankan National Identity Card (NIC) pattern:
+     * Accepts:
+     * - Old NIC format: 9 digits followed by 'V'/'v' or 'X'/'x' (e.g. 853451234V)
+     * - New NIC format: 12 digits (e.g. 198534512340)
+     */
+    private static final Pattern SRI_LANKAN_NIC_PATTERN =
+            Pattern.compile("^(?:\\d{9}[vVxX]|\\d{12})$");
+
     private ValidationUtil() {
         // Prevent instantiation
     }
@@ -42,6 +51,21 @@ public final class ValidationUtil {
      */
     public static boolean isValidSriLankanPhone(String phoneNumber) {
         return isValidPhoneNumber(phoneNumber);
+    }
+
+    /**
+     * Validates if a National Identity Card (NIC) number conforms to Sri Lankan format.
+     * Supports both old 9-digit + V/X format (e.g., 901234567V) and new 12-digit format (e.g., 199012345678).
+     *
+     * @param nic the NIC string to validate
+     * @return true if valid, false otherwise
+     */
+    public static boolean isValidNic(String nic) {
+        if (nic == null) {
+            return false;
+        }
+        String cleanNic = nic.trim().replaceAll("[\\s-]", "");
+        return SRI_LANKAN_NIC_PATTERN.matcher(cleanNic).matches();
     }
 
     /**

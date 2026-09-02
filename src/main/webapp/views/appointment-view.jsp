@@ -245,7 +245,7 @@
                     </div>
                     <div class="col-sm-6 mb-2">
                         <small class="text-muted d-block">Standard Procedure Fee</small>
-                        <div class="fs-5 fw-bold text-success">$<%= String.format("%.2f", appt.getCost()) %></div>
+                        <div class="fs-5 fw-bold text-success">LKR <%= String.format("%.2f", appt.getCost()) %></div>
                     </div>
                 </div>
 

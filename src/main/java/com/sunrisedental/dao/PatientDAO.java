@@ -37,7 +37,7 @@ public interface PatientDAO {
 
     /**
      * Registers a new patient record and returns the generated primary key ID.
-     * If the patient exists by contact number, updates demographic details (including email) and returns the existing ID.
+     * If the patient exists by contact number, updates demographic details (including email and NIC) and returns the existing ID.
      *
      * @param patient patient entity to register
      * @return generated or existing patient_id (>0 on success, -1 on failure)
@@ -45,7 +45,7 @@ public interface PatientDAO {
     int registerPatient(Patient patient);
 
     /**
-     * Updates an existing patient's full name, address, contact number, and email.
+     * Updates an existing patient's full name, address, contact number, email, and NIC.
      *
      * @param patient patient entity with updated details
      * @return true if updated successfully, false otherwise
@@ -74,6 +74,14 @@ public interface PatientDAO {
      * @return matching patients list
      */
     List<Patient> searchPatients(String query);
+
+    /**
+     * Universal search querying across full_name, nic, contact_number, email, or patient_id.
+     *
+     * @param term multi-parameter search term
+     * @return matching patients list
+     */
+    List<Patient> searchPatientsUniversal(String term);
 
     /**
      * Retrieves the complete clinical appointment history for a given patient,

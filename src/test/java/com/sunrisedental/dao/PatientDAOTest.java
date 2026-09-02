@@ -13,7 +13,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit & Integration tests for PatientDAO operations, patient clinical history, full CRUD, and retention analytics.
+ * Unit & Integration tests for PatientDAO operations, patient clinical history, full CRUD, NIC support, universal search, and retention analytics.
  */
 @DisplayName("PatientDAO Management, Full CRUD, History Tracking, and Analytics Tests")
 class PatientDAOTest {
@@ -60,14 +60,15 @@ class PatientDAOTest {
     }
 
     @Test
-    @DisplayName("Should register a new patient with email and return generated ID, then update and retrieve")
+    @DisplayName("Should register a new patient with NIC & email and return generated ID, then update and retrieve")
     void shouldRegisterAndUpdatePatient() {
         String testName = "Test Patient " + System.currentTimeMillis();
+        String testNic = "1990" + (int)(Math.random() * 90000000 + 10000000);
         String testContact = "077" + (int)(Math.random() * 9000000 + 1000000);
         String testEmail = "test" + System.currentTimeMillis() + "@sunrisedental.lk";
         String testAddress = "123 Sample Avenue, Colombo";
 
-        Patient newPatient = new Patient(testName, testAddress, testContact, testEmail);
+        Patient newPatient = new Patient(testName, testNic, testAddress, testContact, testEmail);
         int generatedId = patientDAO.registerPatient(newPatient);
 
         assertTrue(generatedId > 0, "Generated patient ID should be positive");
@@ -77,12 +78,15 @@ class PatientDAOTest {
         Patient fetched = patientDAO.getPatientById(generatedId);
         assertNotNull(fetched);
         assertEquals(testName, fetched.getFullName());
+        assertEquals(testNic, fetched.getNic());
         assertEquals(testContact, fetched.getContactNumber());
         assertEquals(testAddress, fetched.getAddress());
         assertEquals(testEmail, fetched.getEmail());
 
         // Update record
+        String updatedNic = "92" + (int)(Math.random() * 9000000 + 1000000) + "V";
         fetched.setFullName(testName + " Updated");
+        fetched.setNic(updatedNic);
         fetched.setAddress("456 Renovated Lane, Kandy");
         fetched.setContactNumber("0719876543");
         fetched.setEmail("updated." + testEmail);
@@ -93,6 +97,7 @@ class PatientDAOTest {
         Patient updatedRecord = patientDAO.getPatientById(generatedId);
         assertNotNull(updatedRecord);
         assertEquals(testName + " Updated", updatedRecord.getFullName());
+        assertEquals(updatedNic, updatedRecord.getNic());
         assertEquals("456 Renovated Lane, Kandy", updatedRecord.getAddress());
         assertEquals("0719876543", updatedRecord.getContactNumber());
         assertEquals("updated." + testEmail, updatedRecord.getEmail());
@@ -104,25 +109,31 @@ class PatientDAOTest {
     }
 
     @Test
-    @DisplayName("Should search patients by name, contact number, or email")
-    void shouldSearchPatientsByNameOrContactOrEmail() {
+    @DisplayName("Should perform universal multi-parameter search matching NIC, ID, name, contact, and email")
+    void shouldPerformUniversalSearch() {
         String uniqueSuffix = String.valueOf(System.currentTimeMillis());
-        Patient sample = new Patient("SearchTarget " + uniqueSuffix, "Colombo", "072" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 7)), "search" + uniqueSuffix + "@domain.com");
+        String testNic = "1995" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 8));
+        Patient sample = new Patient("UniversalTarget " + uniqueSuffix, testNic, "Galle", "075" + uniqueSuffix.substring(Math.max(0, uniqueSuffix.length() - 7)), "univ" + uniqueSuffix + "@domain.com");
         int id = patientDAO.registerPatient(sample);
         assertTrue(id > 0);
 
         try {
-            List<Patient> searchResultsName = patientDAO.searchPatients("SearchTarget " + uniqueSuffix);
-            assertNotNull(searchResultsName);
-            assertFalse(searchResultsName.isEmpty());
+            // Search by NIC
+            List<Patient> byNic = patientDAO.searchPatientsUniversal(testNic);
+            assertFalse(byNic.isEmpty(), "Should find patient by NIC");
+            assertEquals(id, byNic.get(0).getPatientId());
 
-            List<Patient> searchResultsContact = patientDAO.searchPatients(sample.getContactNumber());
-            assertNotNull(searchResultsContact);
-            assertFalse(searchResultsContact.isEmpty());
+            // Search by Name
+            List<Patient> byName = patientDAO.searchPatientsUniversal("UniversalTarget " + uniqueSuffix);
+            assertFalse(byName.isEmpty(), "Should find patient by full name");
 
-            List<Patient> searchResultsEmail = patientDAO.searchPatients("search" + uniqueSuffix);
-            assertNotNull(searchResultsEmail);
-            assertFalse(searchResultsEmail.isEmpty());
+            // Search by ID
+            List<Patient> byId = patientDAO.searchPatientsUniversal(String.valueOf(id));
+            assertFalse(byId.isEmpty(), "Should find patient by numeric ID");
+
+            // Search by Contact
+            List<Patient> byContact = patientDAO.searchPatientsUniversal(sample.getContactNumber());
+            assertFalse(byContact.isEmpty(), "Should find patient by contact number");
         } finally {
             patientDAO.deletePatient(id);
         }

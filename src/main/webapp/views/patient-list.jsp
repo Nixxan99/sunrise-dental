@@ -111,7 +111,7 @@
             <h2 class="fw-bold mb-1">
                 <i class="bi bi-person-badge text-primary me-2"></i>Patient Profiles & Registry
             </h2>
-            <p class="text-muted mb-0">Manage persistent patient records, lookup contact info, centralize emails, and track clinical appointment histories.</p>
+            <p class="text-muted mb-0">Manage persistent patient records, NIC numbers, contact info, emails, and track clinical appointment histories.</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
             <button type="button" class="btn btn-primary-gradient shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newPatientModal">
@@ -163,13 +163,19 @@
                     <label for="editFullName">Patient Full Name <span class="text-danger">*</span></label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="editNic" name="nic" value="<%= editPatient.getNic() != null ? editPatient.getNic() : "" %>" required>
+                    <label for="editNic">National ID (NIC) <span class="text-danger">*</span></label>
+                </div>
+            </div>
+            <div class="col-md-2">
                 <div class="form-floating">
                     <input type="tel" class="form-control" id="editContactNumber" name="contactNumber" value="<%= editPatient.getContactNumber() %>" required>
                     <label for="editContactNumber">Contact Number <span class="text-danger">*</span></label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="form-floating">
                     <input type="email" class="form-control" id="editEmail" name="email" value="<%= editPatient.getEmail() != null ? editPatient.getEmail() : "" %>">
                     <label for="editEmail">Patient Email</label>
@@ -197,7 +203,7 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control border-start-0 ps-0" name="q" placeholder="Search by name, contact number, or email..." value="<%= searchQuery != null ? searchQuery : "" %>">
+                    <input type="text" class="form-control border-start-0 ps-0" name="q" placeholder="Universal Search by name, NIC, contact number, or ID..." value="<%= searchQuery != null ? searchQuery : "" %>">
                     <button class="btn btn-primary-gradient px-4" type="submit">Search</button>
                     <% if (searchQuery != null && !searchQuery.isEmpty()) { %>
                         <a href="<%= request.getContextPath() %>/patients" class="btn btn-outline-secondary" title="Clear search">
@@ -218,8 +224,9 @@
             <table class="table table-hover align-middle table-clinic mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4" style="width: 90px;">ID</th>
+                        <th class="ps-4" style="width: 80px;">ID</th>
                         <th>Full Name</th>
+                        <th>NIC Number</th>
                         <th>Contact Number</th>
                         <th>Email Address</th>
                         <th>Address / City</th>
@@ -234,6 +241,15 @@
                         <td class="ps-4 fw-bold text-muted">#<%= p.getPatientId() %></td>
                         <td>
                             <div class="fw-bold fs-6"><%= p.getFullName() %></div>
+                        </td>
+                        <td>
+                            <% if (p.getNic() != null && !p.getNic().trim().isEmpty()) { %>
+                                <span class="badge bg-body-secondary text-body border fw-semibold">
+                                    <i class="bi bi-card-heading me-1 text-primary"></i><%= p.getNic() %>
+                                </span>
+                            <% } else { %>
+                                <span class="text-muted small"><em>N/A</em></span>
+                            <% } %>
                         </td>
                         <td>
                             <span class="badge bg-body-secondary text-body border">
@@ -269,7 +285,7 @@
                 <%  }
                    } else { %>
                     <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
+                        <td colspan="7" class="text-center py-5 text-muted">
                             <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
                             No patient records found<%= (searchQuery != null && !searchQuery.isEmpty()) ? " matching \"" + searchQuery + "\"" : "" %>.
                             <div class="mt-2">
@@ -302,6 +318,11 @@
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="modalFullName" name="fullName" placeholder="Full Name" required>
                         <label for="modalFullName">Patient Full Name <span class="text-danger">*</span></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="modalNic" name="nic" placeholder="199012345678" required>
+                        <label for="modalNic">National ID Card (NIC) <span class="text-danger">*</span></label>
                     </div>
 
                     <div class="form-floating mb-3">

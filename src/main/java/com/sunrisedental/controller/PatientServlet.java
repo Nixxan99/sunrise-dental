@@ -88,6 +88,7 @@ public class PatientServlet extends HttpServlet {
         String address = request.getParameter("address");
         String contactNumber = request.getParameter("contactNumber");
         String email = request.getParameter("email");
+        String nic = request.getParameter("nic");
 
         if (fullName == null || fullName.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Patient full name is required.");
@@ -101,11 +102,18 @@ public class PatientServlet extends HttpServlet {
             return;
         }
 
+        if (nic != null && !nic.trim().isEmpty() && !ValidationUtil.isValidNic(nic.trim())) {
+            request.setAttribute("errorMessage", "Invalid NIC format. Please enter a valid Sri Lankan NIC (e.g. 199012345678 or 851234567V).");
+            handleListPatients(request, response);
+            return;
+        }
+
         Patient patient = new Patient(
                 fullName.trim(),
                 address != null ? address.trim() : "",
                 contactNumber.trim(),
-                email != null ? email.trim() : ""
+                email != null ? email.trim() : "",
+                nic != null ? nic.trim().toUpperCase() : ""
         );
 
         if (patientIdStr != null && !patientIdStr.trim().isEmpty()) {
@@ -162,7 +170,7 @@ public class PatientServlet extends HttpServlet {
         String query = request.getParameter("q");
         List<Patient> patients;
         if (query != null && !query.trim().isEmpty()) {
-            patients = patientDAO.searchPatients(query.trim());
+            patients = patientDAO.searchPatientsUniversal(query.trim());
             request.setAttribute("searchQuery", query.trim());
         } else {
             patients = patientDAO.getAllPatients();

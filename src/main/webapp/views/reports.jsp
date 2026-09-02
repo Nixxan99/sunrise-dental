@@ -176,8 +176,8 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Total Clinic Revenue</div>
-                        <div class="fs-2 fw-bold text-success">$<%= String.format("%.2f", totalRevenue) %></div>
-                        <small class="text-muted">Avg Invoice: $<%= String.format("%.2f", avgInvoice) %></small>
+                        <div class="fs-2 fw-bold text-success">LKR <%= String.format("%.2f", totalRevenue) %></div>
+                        <small class="text-muted">Avg Invoice: LKR <%= String.format("%.2f", avgInvoice) %></small>
                     </div>
                     <div class="badge-subtle-success p-3 rounded-circle">
                         <i class="bi bi-cash-stack fs-3"></i>
@@ -223,7 +223,7 @@
         <div class="col-12 col-xl-5">
             <div class="card clinic-card p-4 h-100">
                 <h5 class="fw-bold mb-3">
-                    <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Revenue by Dental Procedure ($)
+                    <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Revenue by Dental Procedure (LKR)
                 </h5>
                 <div>
                     <canvas id="treatmentRevenueChart" style="max-height: 280px;"></canvas>
@@ -274,7 +274,7 @@
                                     <th class="ps-4">Treatment / Procedure</th>
                                     <th class="text-center">Bookings</th>
                                     <th class="text-end">Standard Fee</th>
-                                    <th class="text-end pe-4">Total Earned ($)</th>
+                                    <th class="text-end pe-4">Total Earned (LKR)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -284,8 +284,8 @@
                                 <tr>
                                     <td class="ps-4 fw-semibold"><%= item.getTreatmentName() %></td>
                                     <td class="text-center"><span class="badge bg-body-secondary text-body border"><%= item.getAppointmentCount() %></span></td>
-                                    <td class="text-end">$<%= String.format("%.2f", item.getAverageFee()) %></td>
-                                    <td class="text-end pe-4 fw-bold text-success">$<%= String.format("%.2f", item.getTotalRevenue()) %></td>
+                                    <td class="text-end">LKR <%= String.format("%.2f", item.getAverageFee()) %></td>
+                                    <td class="text-end pe-4 fw-bold text-success">LKR <%= String.format("%.2f", item.getTotalRevenue()) %></td>
                                 </tr>
                             <%  }
                                } else { %>
@@ -315,7 +315,7 @@
                                 <tr>
                                     <th class="ps-4">Doctor</th>
                                     <th class="text-center">Appointments</th>
-                                    <th class="text-end pe-4">Revenue ($)</th>
+                                    <th class="text-end pe-4">Revenue (LKR)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -328,7 +328,7 @@
                                         <small class="text-muted"><%= doc.getSpecialization() %></small>
                                     </td>
                                     <td class="text-center"><span class="badge bg-primary"><%= doc.getAppointmentCount() %></span></td>
-                                    <td class="text-end pe-4 fw-bold text-success">$<%= String.format("%.2f", doc.getTotalRevenue()) %></td>
+                                    <td class="text-end pe-4 fw-bold text-success">LKR <%= String.format("%.2f", doc.getTotalRevenue()) %></td>
                                 </tr>
                             <%  }
                                } else { %>
@@ -359,7 +359,7 @@
             data: {
                 labels: treatmentLabels,
                 datasets: [{
-                    label: 'Total Revenue ($)',
+                    label: 'Total Revenue (LKR)',
                     data: treatmentRevenues,
                     backgroundColor: 'rgba(13, 110, 253, 0.75)',
                     borderColor: 'rgba(13, 110, 253, 1)',
@@ -377,7 +377,7 @@
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) { return '$' + value; }
+                            callback: function(value) { return 'LKR ' + value; }
                         }
                     }
                 }

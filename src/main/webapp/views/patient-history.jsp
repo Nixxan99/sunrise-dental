@@ -122,7 +122,7 @@
             <h2 class="fw-bold mb-1">
                 <i class="bi bi-journal-medical text-primary me-2"></i>Patient Clinical Record & History
             </h2>
-            <p class="text-muted mb-0">Demographic profile, lifetime appointment timeline, procedures, and payment histories.</p>
+            <p class="text-muted mb-0">Demographic profile, NIC, lifetime appointment timeline, procedures, and payment histories.</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
             <% if (patient != null) { %>
@@ -148,16 +148,26 @@
                     <div>
                         <div class="text-muted small text-uppercase fw-bold">Patient Profile</div>
                         <h4 class="fw-bold mb-0"><%= patient.getFullName() %></h4>
-                        <span class="badge bg-secondary mt-1">ID: #<%= patient.getPatientId() %></span>
+                        <div class="mt-1 d-flex gap-2 flex-wrap">
+                            <span class="badge bg-secondary">ID: #<%= patient.getPatientId() %></span>
+                            <% if (patient.getNic() != null && !patient.getNic().trim().isEmpty()) { %>
+                                <span class="badge bg-primary"><i class="bi bi-card-heading me-1"></i>NIC: <%= patient.getNic() %></span>
+                            <% } %>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
                 <div class="mb-2">
-                    <span class="text-muted small d-block">Contact Phone Number</span>
-                    <span class="fw-semibold fs-6">
+                    <span class="text-muted small d-block">Contact Phone & Email</span>
+                    <span class="fw-semibold fs-6 d-block">
                         <i class="bi bi-telephone-fill text-primary me-1"></i><%= patient.getContactNumber() %>
                     </span>
+                    <% if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) { %>
+                        <span class="small text-muted d-block">
+                            <i class="bi bi-envelope me-1"></i><%= patient.getEmail() %>
+                        </span>
+                    <% } %>
                 </div>
                 <div>
                     <span class="text-muted small d-block">Residential Address / City</span>
@@ -177,7 +187,7 @@
                     <div class="col-6">
                         <div class="p-3 bg-body-tertiary rounded text-center">
                             <div class="text-muted small text-uppercase fw-bold">Lifetime Total</div>
-                            <div class="fs-4 fw-bold text-success">$<%= String.format("%.2f", totalBilled) %></div>
+                            <div class="fs-4 fw-bold text-success">LKR <%= String.format("%.2f", totalBilled) %></div>
                         </div>
                     </div>
                 </div>
@@ -226,8 +236,8 @@
                             <td>
                                 <span class="badge bg-body-secondary text-body border"><%= item.getTreatmentName() %></span>
                             </td>
-                            <td>$<%= String.format("%.2f", item.getTreatmentCost()) %></td>
-                            <td class="fw-bold text-dark">$<%= String.format("%.2f", item.getTotalAmount()) %></td>
+                            <td>LKR <%= String.format("%.2f", item.getTreatmentCost()) %></td>
+                            <td class="fw-bold text-dark">LKR <%= String.format("%.2f", item.getTotalAmount()) %></td>
                             <td>
                                 <% if ("COMPLETED".equalsIgnoreCase(item.getAppointmentStatus())) { %>
                                     <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>COMPLETED</span>

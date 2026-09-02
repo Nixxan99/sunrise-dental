@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller handling appointment registration, search, and automated asynchronous notification dispatching.
+ * Controller handling appointment registration, universal search, and automated asynchronous notification dispatching.
  */
 @WebServlet(name = "AppointmentServlet", urlPatterns = {"/appointments"})
 public class AppointmentServlet extends HttpServlet {
@@ -110,8 +110,10 @@ public class AppointmentServlet extends HttpServlet {
 
         String patientIdStr = request.getParameter("patientId");
         String patientName = request.getParameter("patientName");
+        String nic = request.getParameter("nic");
         String address = request.getParameter("address");
         String contactNumber = request.getParameter("contactNumber");
+        String email = request.getParameter("email");
         String dentistIdStr = request.getParameter("dentistId");
         String treatmentIdStr = request.getParameter("treatmentId");
         String appointmentDateStr = request.getParameter("appointmentDate");
@@ -126,6 +128,12 @@ public class AppointmentServlet extends HttpServlet {
         if (!ValidationUtil.isValidPhoneNumber(contactNumber)) {
             forwardWithValidationError(request, response,
                     "Invalid phone number format. Please provide a valid Sri Lankan number (e.g., 0712345678, +94771234567).");
+            return;
+        }
+
+        if (nic != null && !nic.trim().isEmpty() && !ValidationUtil.isValidNic(nic.trim())) {
+            forwardWithValidationError(request, response,
+                    "Invalid NIC format. Please enter a valid Sri Lankan NIC (e.g. 199012345678 or 851234567V).");
             return;
         }
 
@@ -174,13 +182,19 @@ public class AppointmentServlet extends HttpServlet {
                     patient.setFullName(patientName.trim());
                     patient.setAddress(address != null ? address.trim() : "");
                     patient.setContactNumber(contactNumber.trim());
+                    if (email != null && !email.trim().isEmpty()) {
+                        patient.setEmail(email.trim());
+                    }
+                    if (nic != null && !nic.trim().isEmpty()) {
+                        patient.setNic(nic.trim().toUpperCase());
+                    }
                     patientDAO.updatePatient(patient);
                 } else {
-                    patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim());
+                    patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim(), email != null ? email.trim() : "", nic != null ? nic.trim().toUpperCase() : "");
                     targetPatientId = patientDAO.registerPatient(patient);
                 }
             } else {
-                patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim());
+                patient = new Patient(patientName.trim(), address != null ? address.trim() : "", contactNumber.trim(), email != null ? email.trim() : "", nic != null ? nic.trim().toUpperCase() : "");
                 targetPatientId = patientDAO.registerPatient(patient);
             }
 
@@ -242,8 +256,10 @@ public class AppointmentServlet extends HttpServlet {
                 if (p != null) {
                     request.setAttribute("selectedPatientId", p.getPatientId());
                     request.setAttribute("enteredPatientName", p.getFullName());
+                    request.setAttribute("enteredNic", p.getNic());
                     request.setAttribute("enteredAddress", p.getAddress());
                     request.setAttribute("enteredContactNumber", p.getContactNumber());
+                    request.setAttribute("enteredEmail", p.getEmail());
                 }
             } catch (NumberFormatException ignored) {}
         }
@@ -294,8 +310,10 @@ public class AppointmentServlet extends HttpServlet {
         request.setAttribute("errorMessage", errorMsg);
         request.setAttribute("selectedPatientId", request.getParameter("patientId"));
         request.setAttribute("enteredPatientName", request.getParameter("patientName"));
+        request.setAttribute("enteredNic", request.getParameter("nic"));
         request.setAttribute("enteredAddress", request.getParameter("address"));
         request.setAttribute("enteredContactNumber", request.getParameter("contactNumber"));
+        request.setAttribute("enteredEmail", request.getParameter("email"));
         request.setAttribute("enteredDentistId", request.getParameter("dentistId"));
         request.setAttribute("enteredTreatmentId", request.getParameter("treatmentId"));
         request.setAttribute("enteredDate", request.getParameter("appointmentDate"));

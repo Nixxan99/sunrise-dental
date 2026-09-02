@@ -15,6 +15,7 @@ public class Patient implements Serializable {
     private String address;
     private String contactNumber;
     private String email;
+    private String nic;
 
     /**
      * Default no-argument constructor.
@@ -23,7 +24,7 @@ public class Patient implements Serializable {
     }
 
     /**
-     * Constructor without patientId or email.
+     * Constructor without patientId, email, or nic.
      */
     public Patient(String fullName, String address, String contactNumber) {
         this.fullName = fullName;
@@ -42,7 +43,18 @@ public class Patient implements Serializable {
     }
 
     /**
-     * Parameterized constructor without email.
+     * Constructor without patientId with email and nic.
+     */
+    public Patient(String fullName, String address, String contactNumber, String email, String nic) {
+        this.fullName = fullName;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.nic = nic;
+    }
+
+    /**
+     * Parameterized constructor without email or nic.
      */
     public Patient(int patientId, String fullName, String address, String contactNumber) {
         this.patientId = patientId;
@@ -52,7 +64,7 @@ public class Patient implements Serializable {
     }
 
     /**
-     * Full parameterized constructor including email.
+     * Parameterized constructor including email without nic.
      */
     public Patient(int patientId, String fullName, String address, String contactNumber, String email) {
         this.patientId = patientId;
@@ -60,6 +72,18 @@ public class Patient implements Serializable {
         this.address = address;
         this.contactNumber = contactNumber;
         this.email = email;
+    }
+
+    /**
+     * Full parameterized constructor including email and nic.
+     */
+    public Patient(int patientId, String fullName, String address, String contactNumber, String email, String nic) {
+        this.patientId = patientId;
+        this.fullName = fullName;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.email = email;
+        this.nic = nic;
     }
 
     public int getPatientId() {
@@ -102,6 +126,14 @@ public class Patient implements Serializable {
         this.email = email;
     }
 
+    public String getNic() {
+        return nic;
+    }
+
+    public void setNic(String nic) {
+        this.nic = nic;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -111,12 +143,13 @@ public class Patient implements Serializable {
                 Objects.equals(fullName, patient.fullName) &&
                 Objects.equals(address, patient.address) &&
                 Objects.equals(contactNumber, patient.contactNumber) &&
-                Objects.equals(email, patient.email);
+                Objects.equals(email, patient.email) &&
+                Objects.equals(nic, patient.nic);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(patientId, fullName, address, contactNumber, email);
+        return Objects.hash(patientId, fullName, address, contactNumber, email, nic);
     }
 
     @Override
@@ -127,6 +160,7 @@ public class Patient implements Serializable {
                 ", address='" + address + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
                 ", email='" + email + '\'' +
+                ", nic='" + nic + '\'' +
                 '}';
     }
 }

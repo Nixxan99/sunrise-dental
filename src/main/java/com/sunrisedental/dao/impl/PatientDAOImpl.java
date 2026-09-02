@@ -28,29 +28,36 @@ public class PatientDAOImpl implements PatientDAO {
     private static final Logger LOGGER = Logger.getLogger(PatientDAOImpl.class.getName());
     private static volatile boolean schemaVerified = false;
 
+    private static final String SELECT_PATIENT_FIELDS =
+            "SELECT patient_id, full_name, address, contact_number, email, nic FROM patients ";
+
     public PatientDAOImpl() {
         ensureSchema();
     }
 
     /**
-     * Ensures the email column exists in the patients table for backward-compatible schema migration.
+     * Ensures the email and nic columns exist in the patients table for backward-compatible schema migration.
      */
     private static synchronized void ensureSchema() {
         if (schemaVerified) return;
         try (Connection conn = DBConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement()) {
-            stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS email VARCHAR(100)");
+            try {
+                stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS email VARCHAR(100)");
+            } catch (Exception ignored) {}
+            try {
+                stmt.execute("ALTER TABLE patients ADD COLUMN IF NOT EXISTS nic VARCHAR(20)");
+            } catch (Exception ignored) {}
             schemaVerified = true;
         } catch (Exception e) {
-            // Ignore if column already exists or IF NOT EXISTS syntax variance
             schemaVerified = true;
-            LOGGER.log(Level.FINE, "Schema check on patients email column: " + e.getMessage());
+            LOGGER.log(Level.FINE, "Schema check on patients columns: " + e.getMessage());
         }
     }
 
     @Override
     public Patient getPatientById(int patientId) {
-        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients WHERE patient_id = ?";
+        String sql = SELECT_PATIENT_FIELDS + "WHERE patient_id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -71,7 +78,7 @@ public class PatientDAOImpl implements PatientDAO {
         if (contactNumber == null || contactNumber.trim().isEmpty()) {
             return null;
         }
-        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients WHERE contact_number = ?";
+        String sql = SELECT_PATIENT_FIELDS + "WHERE contact_number = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -109,12 +116,15 @@ public class PatientDAOImpl implements PatientDAO {
             if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
                 existing.setEmail(patient.getEmail());
             }
+            if (patient.getNic() != null && !patient.getNic().trim().isEmpty()) {
+                existing.setNic(patient.getNic());
+            }
             updatePatient(existing);
             patient.setPatientId(existing.getPatientId());
             return existing.getPatientId();
         }
 
-        String sql = "INSERT INTO patients (full_name, address, contact_number, email) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO patients (full_name, address, contact_number, email, nic) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -122,6 +132,7 @@ public class PatientDAOImpl implements PatientDAO {
             ps.setString(2, patient.getAddress() != null ? patient.getAddress() : "");
             ps.setString(3, patient.getContactNumber() != null ? patient.getContactNumber().trim() : "");
             ps.setString(4, patient.getEmail() != null ? patient.getEmail().trim() : "");
+            ps.setString(5, patient.getNic() != null ? patient.getNic().trim() : "");
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
@@ -144,7 +155,7 @@ public class PatientDAOImpl implements PatientDAO {
         if (patient == null || patient.getPatientId() <= 0) {
             return false;
         }
-        String sql = "UPDATE patients SET full_name = ?, address = ?, contact_number = ?, email = ? WHERE patient_id = ?";
+        String sql = "UPDATE patients SET full_name = ?, address = ?, contact_number = ?, email = ?, nic = ? WHERE patient_id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -152,7 +163,8 @@ public class PatientDAOImpl implements PatientDAO {
             ps.setString(2, patient.getAddress());
             ps.setString(3, patient.getContactNumber());
             ps.setString(4, patient.getEmail() != null ? patient.getEmail().trim() : "");
-            ps.setInt(5, patient.getPatientId());
+            ps.setString(5, patient.getNic() != null ? patient.getNic().trim() : "");
+            ps.setInt(6, patient.getPatientId());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -206,7 +218,7 @@ public class PatientDAOImpl implements PatientDAO {
     @Override
     public List<Patient> getAllPatients() {
         List<Patient> list = new ArrayList<>();
-        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients ORDER BY full_name";
+        String sql = SELECT_PATIENT_FIELDS + "ORDER BY full_name";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -222,14 +234,31 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public List<Patient> searchPatients(String query) {
-        if (query == null || query.trim().isEmpty()) {
+        return searchPatientsUniversal(query);
+    }
+
+    @Override
+    public List<Patient> searchPatientsUniversal(String term) {
+        if (term == null || term.trim().isEmpty()) {
             return getAllPatients();
         }
 
         List<Patient> list = new ArrayList<>();
-        String sql = "SELECT patient_id, full_name, address, contact_number, email FROM patients " +
-                     "WHERE LOWER(full_name) LIKE ? OR contact_number LIKE ? OR LOWER(email) LIKE ? ORDER BY full_name";
-        String pattern = "%" + query.trim().toLowerCase() + "%";
+        String cleanTerm = term.trim();
+        String pattern = "%" + cleanTerm.toLowerCase() + "%";
+
+        int numericId = -1;
+        try {
+            numericId = Integer.parseInt(cleanTerm.replaceAll("\\D", ""));
+        } catch (Exception ignored) {}
+
+        String sql = SELECT_PATIENT_FIELDS +
+                "WHERE LOWER(full_name) LIKE ? " +
+                "   OR LOWER(COALESCE(nic, '')) LIKE ? " +
+                "   OR contact_number LIKE ? " +
+                "   OR LOWER(COALESCE(email, '')) LIKE ? " +
+                "   OR patient_id = ? " +
+                "ORDER BY full_name";
 
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -237,6 +266,8 @@ public class PatientDAOImpl implements PatientDAO {
             ps.setString(1, pattern);
             ps.setString(2, pattern);
             ps.setString(3, pattern);
+            ps.setString(4, pattern);
+            ps.setInt(5, numericId > 0 ? numericId : -1);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -244,7 +275,7 @@ public class PatientDAOImpl implements PatientDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "SQL error searching patients with query: " + query, e);
+            LOGGER.log(Level.SEVERE, "SQL error universally searching patients with term: " + term, e);
         }
         return list;
     }
@@ -373,6 +404,11 @@ public class PatientDAOImpl implements PatientDAO {
         patient.setContactNumber(rs.getString("contact_number"));
         try {
             patient.setEmail(rs.getString("email"));
+        } catch (SQLException ignored) {
+            // Column may be missing in legacy result sets
+        }
+        try {
+            patient.setNic(rs.getString("nic"));
         } catch (SQLException ignored) {
             // Column may be missing in legacy result sets
         }
